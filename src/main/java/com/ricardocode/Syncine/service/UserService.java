@@ -2,7 +2,7 @@ package com.ricardocode.Syncine.service;
 
 import com.ricardocode.Syncine.Repository.UserRepository;
 import com.ricardocode.Syncine.model.User;
-import com.ricardocode.Syncine.dto.UserDto;
+import com.ricardocode.Syncine.dto.UserDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -21,7 +21,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User registerNewUser(UserDto userDto) {
+    public User registerNewUser(UserDTO userDto) {
         if (userRepository.findByEmail(userDto.email()).isPresent()){
             throw new IllegalStateException("E-mail já cadastrado");
         }

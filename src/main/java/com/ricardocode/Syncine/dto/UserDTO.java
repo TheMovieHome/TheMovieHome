@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 
-public record UserDto(
+public record UserDTO(
         @NotBlank(message = "O nome de usuário não pode estar em branco")
         String username,
 
