@@ -7,7 +7,7 @@ import lombok.Setter;
 import java.util.List;
 
 
-@Entity
+@Entity // anotação para indicar que essa classe é uma entidade
 @Getter
 @Setter
 public class User {

@@ -55,4 +55,20 @@ public class UserService {
         }
         userRepository.deleteById(id);
     }
+
+    public User updateUser(Long user, UserDTO userDto) {
+        User existingUser = getUserById(user);
+        if (userDto.username() != null) {
+            existingUser.setUsername(userDto.username());
+        }
+        if (userDto.email() != null) {
+            existingUser.setEmail(userDto.email());
+        }
+        if (userDto.password() != null) {
+            existingUser.setPassword(passwordEncoder.encode(userDto.password()));
+        }
+        return userRepository.save(existingUser);
+
+    }
+
 }
