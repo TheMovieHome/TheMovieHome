@@ -4,11 +4,13 @@ package com.ricardocode.Syncine.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.AllArgsConstructor;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(
@@ -40,11 +42,10 @@ public class Amizade {
 
     // Status da amizade
     @Enumerated(EnumType.STRING)
-    private StatusAmizade status = StatusAmizade.PENDENTE;
+    private StatusPedido status = StatusPedido.PENDENTE;
 
     private LocalDateTime dataCriacao   = LocalDateTime.now();
-    private LocalDateTime dataResposta;       // preenchido em ACEITA ou RECUSADA
-    private LocalDateTime dataBloqueio;       // preenchido em BLOQUEADA
+    
 
     
 }
