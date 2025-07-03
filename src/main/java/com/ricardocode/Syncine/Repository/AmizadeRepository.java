@@ -1,4 +1,4 @@
-package com.ricardocode.Syncine.Repository;
+package com.ricardocode.Syncine.repository;
 
 import com.ricardocode.Syncine.model.Amizade;
 import com.ricardocode.Syncine.model.StatusPedido;
@@ -24,7 +24,7 @@ public interface AmizadeRepository extends JpaRepository<Amizade, Long> {
     // Busca pedidos pendentes recebidos por um usuário
     List<Amizade> findBySolicitadoIdAndStatus(Long idSolicitado, StatusPedido status);
 
-    // Busca amizade aceita entre dois usuários
+    // Busca amizade 
     @Query("""
         SELECT a FROM Amizade a
         WHERE ((a.solicitante.id = :id1 AND a.solicitado.id = :id2)

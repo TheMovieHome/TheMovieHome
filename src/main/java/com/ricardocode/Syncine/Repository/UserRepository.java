@@ -1,4 +1,4 @@
-package com.ricardocode.Syncine.Repository;
+package com.ricardocode.Syncine.repository;
 
 import com.ricardocode.Syncine.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -3,6 +3,7 @@ package com.ricardocode.Syncine.model;
 import java.time.LocalDateTime;
 import jakarta.persistence.*;
 
+
 @Entity
 @Table(name = "sessoes",
        indexes = {
@@ -36,5 +37,5 @@ public class Sessao {
     @JoinColumn(name = "dono_id", nullable = false)
     private User dono;
 
-
+    
 }

@@ -3,7 +3,6 @@ package com.ricardocode.Syncine.controller;
 
 import com.ricardocode.Syncine.dto.MovieResultDTO;
 import com.ricardocode.Syncine.service.OmdbService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 public class MovieController {
     private final OmdbService omdbService;
 
-    @Autowired
+    
     public MovieController(OmdbService omdbService) {
         this.omdbService = omdbService;
     }

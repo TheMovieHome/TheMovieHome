@@ -1,7 +1,7 @@
 package com.ricardocode.Syncine.service;
 
-import com.ricardocode.Syncine.Repository.UserRepository;
 import com.ricardocode.Syncine.model.User;
+import com.ricardocode.Syncine.repository.UserRepository;
 import com.ricardocode.Syncine.dto.UserDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
