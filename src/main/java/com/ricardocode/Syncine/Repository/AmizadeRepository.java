@@ -1,7 +1,7 @@
 package com.ricardocode.Syncine.repository;
 
 import com.ricardocode.Syncine.model.Amizade;
-import com.ricardocode.Syncine.model.StatusPedido;
+import com.ricardocode.Syncine.model.enums.StatusPedido;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

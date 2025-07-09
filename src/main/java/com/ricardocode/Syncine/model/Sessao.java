@@ -1,6 +1,8 @@
 package com.ricardocode.Syncine.model;
 
 import java.time.LocalDateTime;
+
+import com.ricardocode.Syncine.model.enums.Visibilidade;
 import jakarta.persistence.*;
 
 

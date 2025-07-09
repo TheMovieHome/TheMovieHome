@@ -1,6 +1,7 @@
 package com.ricardocode.Syncine.model;
 
 
+import com.ricardocode.Syncine.model.enums.StatusPedido;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.Getter;

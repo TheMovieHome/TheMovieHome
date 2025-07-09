@@ -1,8 +1,7 @@
 package com.ricardocode.Syncine.repository;
 
 import com.ricardocode.Syncine.model.Sessao;
-import com.ricardocode.Syncine.model.User;
-import com.ricardocode.Syncine.model.Visibilidade;
+import com.ricardocode.Syncine.model.enums.Visibilidade;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

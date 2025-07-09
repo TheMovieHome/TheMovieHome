@@ -1,7 +1,7 @@
 package com.ricardocode.Syncine.service;
 
 import com.ricardocode.Syncine.model.Amizade;
-import com.ricardocode.Syncine.model.StatusPedido;
+import com.ricardocode.Syncine.model.enums.StatusPedido;
 import com.ricardocode.Syncine.model.User;
 import com.ricardocode.Syncine.repository.AmizadeRepository;
 import com.ricardocode.Syncine.repository.UserRepository;
