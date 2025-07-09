@@ -8,33 +8,29 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "convites")
-public class Convite {
+public class ConviteAmizade {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Usuário que está sendo convidado 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "convidado_id")
-    private User convidado;
 
-    // Quem enviou o convite (dono da sala)
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "remetente_id")
-    private User remetente;
+    // Usuário que esta mandando o convite
+    @ManyToOne
+    @JoinColumn(name = "Rementente_id")
+    private Usuario Rementente;
 
-    // Sessão para a qual o convite foi enviado 
+    // Usuário que vai receber o convite
     @ManyToOne(optional = false)
-    @JoinColumn(name = "sessao_id")
-    private Sessao sessao;
+    @JoinColumn(name = "Destinatario_id")
+    private Usuario Destinatario;
 
-    // Status do pedido
+    // Status do convite
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusPedido status = StatusPedido.PENDENTE;
 
-    // Hora do pedido
+    // Hora do convite
     @Column(nullable = false)
     private LocalDateTime enviadoEm = LocalDateTime.now();
 

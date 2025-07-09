@@ -1,11 +1,13 @@
 package com.ricardocode.Syncine.model;
 
 import java.time.LocalDateTime;
-
-import com.ricardocode.Syncine.model.enums.Visibilidade;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import com.ricardocode.Syncine.model.enums.Visibilidade;
 
-
+@Getter
+@Setter
 @Entity
 @Table(name = "sessoes",
        indexes = {
@@ -37,7 +39,11 @@ public class Sessao {
     // Dono da sala 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dono_id", nullable = false)
-    private User dono;
+    private Usuario dono;
 
-    
+//    Adicionar autenticação para identificar automaticamente o dono (sem precisar passar donoId).
+//
+//    Permitir entrar em uma sessão privada com o código (findByCodigoAcesso).
+//
+//    Paginar sessões públicas com Pageable.
 }

@@ -2,9 +2,9 @@ package com.ricardocode.Syncine.service;
 
 import com.ricardocode.Syncine.model.Amizade;
 import com.ricardocode.Syncine.model.enums.StatusPedido;
-import com.ricardocode.Syncine.model.User;
+import com.ricardocode.Syncine.model.Usuario;
 import com.ricardocode.Syncine.repository.AmizadeRepository;
-import com.ricardocode.Syncine.repository.UserRepository;
+import com.ricardocode.Syncine.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ import java.util.Optional;
 public class AmizadeService {
 
     private final AmizadeRepository amizadeRepository;
-    private final UserRepository userRepository;
+    private final UsuarioRepository userRepository;
 
     public boolean existeRelacionamento(Long id1, Long id2) {
         return amizadeRepository.existeRelacaoEntreUsuarios(id1, id2);
@@ -34,9 +34,9 @@ public class AmizadeService {
             throw new IllegalStateException("Já existe uma relação entre esses usuários.");
         }
 
-        User solicitante = userRepository.findById(idSolicitante)
+        Usuario solicitante = userRepository.findById(idSolicitante)
                 .orElseThrow(() -> new IllegalArgumentException("Solicitante não encontrado."));
-        User solicitado = userRepository.findById(idSolicitado)
+        Usuario solicitado = userRepository.findById(idSolicitado)
                 .orElseThrow(() -> new IllegalArgumentException("Solicitado não encontrado."));
 
         Amizade amizade = new Amizade();

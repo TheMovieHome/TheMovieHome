@@ -35,11 +35,11 @@ public class Amizade {
 
     // Usuario que mandou o convite
     @ManyToOne(optional = false)
-    private User solicitante;
+    private Usuario solicitante;
 
     // Usuario que recebeu o convite
     @ManyToOne(optional = false)
-    private User solicitado;
+    private Usuario solicitado;
 
     // Status da amizade
     @Enumerated(EnumType.STRING)

@@ -17,12 +17,12 @@ public class ConviteSessao {
     // Usuário que está sendo convidado 
     @ManyToOne(optional = false)
     @JoinColumn(name = "convidado_id")
-    private User convidado;
+    private Usuario convidado;
 
     // Quem enviou o convite (dono da sala)
     @ManyToOne(optional = false)
     @JoinColumn(name = "remetente_id")
-    private User remetente;
+    private Usuario remetente;
 
     // Sessão para a qual o convite foi enviado 
     @ManyToOne(optional = false)
