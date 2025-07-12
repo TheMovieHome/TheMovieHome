@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import './Login.css';
 
@@ -20,7 +21,8 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  // Imagens do carrossel - relacionadas a filmes/streaming
+  const API_BASE_URL = 'http://localhost:8080/api/users';
+
   const carouselImages = [
     {
       url: 'https://image.tmdb.org/t/p/original/4fGg4PKmrCeCEt5idrIVftdpLxB.jpg',
@@ -48,7 +50,7 @@ const Login = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
-    }, 5000);
+    }, 10000);
     return () => clearInterval(timer);
   }, []);
 
@@ -93,11 +95,33 @@ const Login = () => {
     }
 
     setLoading(true);
-    // Simulando chamada API
-    setTimeout(() => {
-      alert('Login realizado com sucesso!');
+    try {
+      const response = await fetch(`${API_BASE_URL}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const users = await response.json();
+        const user = users.find(u => u.email === loginData.email);
+
+        if (user) {
+          alert('Login realizado com sucesso!');
+          console.log('Usuário logado:', user);
+        } else {
+          setErrors({ general: 'Credenciais inválidas' });
+        }
+      } else {
+        setErrors({ general: 'Erro no servidor' });
+      }
+    } catch (error) {
+      console.error('Erro no login:', error);
+      setErrors({ general: 'Erro de conexão' });
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   const handleRegisterSubmit = async (e) => {
@@ -109,12 +133,39 @@ const Login = () => {
     }
 
     setLoading(true);
-    // Simulando chamada API
-    setTimeout(() => {
-      alert('Cadastro realizado com sucesso!');
-      setIsLogin(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: registerData.username,
+          email: registerData.email,
+          password: registerData.password
+        })
+      });
+
+      if (response.ok) {
+        const message = await response.text();
+        alert(message);
+        setIsLogin(true);
+        setRegisterData({
+          username: '',
+          email: '',
+          password: '',
+          confirmPassword: ''
+        });
+      } else {
+        const errorMessage = await response.text();
+        setErrors({ general: errorMessage });
+      }
+    } catch (error) {
+      console.error('Erro no registro:', error);
+      setErrors({ general: 'Erro de conexão' });
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   const nextSlide = () => {
@@ -136,7 +187,7 @@ const Login = () => {
               key={index}
               className={`carousel-slide ${index === currentSlide ? 'active' : ''}`}
               style={{
-                backgroundImage: `url(${image.url})`,
+                backgroundImage: `url(${image.url})`
               }}
             >
               <div className="carousel-overlay">
@@ -153,12 +204,18 @@ const Login = () => {
           ))}
 
           {/* Controles do carrossel */}
-          <button onClick={prevSlide} className="carousel-control prev">
+          <button
+            onClick={prevSlide}
+            className="carousel-control prev"
+          >
             <svg className="carousel-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <button onClick={nextSlide} className="carousel-control next">
+          <button
+            onClick={nextSlide}
+            className="carousel-control next"
+          >
             <svg className="carousel-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -213,13 +270,13 @@ const Login = () => {
           {/* Erro geral */}
           {errors.general && (
             <div className="error-message general">
-              {errors.general}
+              <p>{errors.general}</p>
             </div>
           )}
 
           {/* Formulário de Login */}
           {isLogin ? (
-            <form onSubmit={handleLoginSubmit} className="form">
+            <form className="form" onSubmit={handleLoginSubmit}>
               <div className="form-header">
                 <h2>Bem-vindo!</h2>
                 <p>Entre na sua conta</p>
@@ -263,7 +320,7 @@ const Login = () => {
             </form>
           ) : (
             /* Formulário de Cadastro */
-            <form onSubmit={handleRegisterSubmit} className="form">
+            <form className="form" onSubmit={handleRegisterSubmit}>
               <div className="form-header">
                 <h2>Criar conta</h2>
                 <p>Junte-se à nossa comunidade</p>

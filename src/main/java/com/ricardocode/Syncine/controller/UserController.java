@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController //identificar que essa classe é um controller
-
+@CrossOrigin(origins = "http://localhost:5173" )
 @RequestMapping("api/users") //endpoint para criar a url que vai ser o endereço para o cadastro e login
 public class UserController {
 
