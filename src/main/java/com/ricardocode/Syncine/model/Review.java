@@ -17,7 +17,7 @@ public class Review {
     private String reviewText;
 
     @ManyToOne
-    @JoinColumn(name = "userario_id", nullable = false )
+    @JoinColumn(name = "usuario_id", nullable = false )
     private Usuario user;
 
 }

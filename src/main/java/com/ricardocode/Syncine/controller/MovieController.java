@@ -1,7 +1,8 @@
 package com.ricardocode.Syncine.controller;
 
 
-import com.ricardocode.Syncine.dto.MovieResultDTO;
+import com.ricardocode.Syncine.dto.RespostaProcuraOmdbDTO;
+import com.ricardocode.Syncine.dto.ResultadoFilmeDTO;
 import com.ricardocode.Syncine.service.OmdbService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +17,9 @@ public class MovieController {
         this.omdbService = omdbService;
     }
 
-    @GetMapping("/search/{title}")
-    public ResponseEntity<MovieResultDTO> searchMovie(@PathVariable String title) {
-        MovieResultDTO movie = omdbService.searchMovieByTitle(title);
+    @GetMapping("/busca/{title}")
+    public ResponseEntity<ResultadoFilmeDTO> searchMovie(@PathVariable String title) {
+        ResultadoFilmeDTO movie = omdbService.procurarFilmesPorTitulo(title);
 
         if (movie != null && movie.imdbId() != null) {
             return ResponseEntity.ok(movie);
@@ -27,4 +28,16 @@ public class MovieController {
         }
     }
 
+
+    @GetMapping("/busca")
+    public ResponseEntity<RespostaProcuraOmdbDTO> searchMoviesByTerm(@RequestParam("termo") String searchTerm) {
+        RespostaProcuraOmdbDTO response = omdbService.procurarFilmesPorTermo(searchTerm);
+
+        if (response != null && "True".equalsIgnoreCase(response.resposta())) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
+
