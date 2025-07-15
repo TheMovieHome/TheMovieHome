@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import './Login.css';
 
-const Login = () => {
+const Login = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [useMockAuth, setUseMockAuth] = useState(false); // Toggle para modo mock
 
   const [loginData, setLoginData] = useState({
     email: '',
@@ -22,6 +22,28 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const API_BASE_URL = 'http://localhost:8080/api/users';
+
+  // Dados mockados para login sem API
+  const mockUsers = [
+    {
+      id: 1,
+      username: 'admin',
+      email: 'admin@test.com',
+      password: '123456'
+    },
+    {
+      id: 2,
+      username: 'user',
+      email: 'user@test.com',
+      password: '123456'
+    },
+    {
+      id: 3,
+      username: 'demo',
+      email: 'demo@test.com',
+      password: 'demo123'
+    }
+  ];
 
   const carouselImages = [
     {
@@ -86,8 +108,46 @@ const Login = () => {
     return newErrors;
   };
 
+  // Função para login mockado
+  const handleMockLogin = () => {
+    const formErrors = validateLogin();
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
+
+    setLoading(true);
+
+    // Simula delay de API
+    setTimeout(() => {
+      const user = mockUsers.find(u =>
+        u.email === loginData.email && u.password === loginData.password
+      );
+
+      if (user) {
+        onLogin({
+          id: user.id,
+          name: user.username,
+          email: user.email
+        });
+        console.log('Mock login realizado:', user);
+      } else {
+        setErrors({ general: 'Credenciais inválidas' });
+      }
+      setLoading(false);
+    }, 1000);
+  };
+
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
+
+    // Se estiver no modo mock, usar login mockado
+    if (useMockAuth) {
+      handleMockLogin();
+      return;
+    }
+
+    // Código original da API
     const formErrors = validateLogin();
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
@@ -108,7 +168,11 @@ const Login = () => {
         const user = users.find(u => u.email === loginData.email);
 
         if (user) {
-          alert('Login realizado com sucesso!');
+          onLogin({
+            id: user.id,
+            name: user.username,
+            email: user.email
+          });
           console.log('Usuário logado:', user);
         } else {
           setErrors({ general: 'Credenciais inválidas' });
@@ -118,7 +182,7 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Erro no login:', error);
-      setErrors({ general: 'Erro de conexão' });
+      setErrors({ general: 'Erro de conexão - Tente ativar o modo demo' });
     } finally {
       setLoading(false);
     }
@@ -245,6 +309,45 @@ const Login = () => {
       {/* Lado direito - Formulário */}
       <div className="form-section">
         <div className="form-container">
+          {/* Toggle para modo demo */}
+          <div className="demo-toggle" style={{ marginBottom: '20px', textAlign: 'center' }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              fontSize: '14px',
+              color: '#666'
+            }}>
+              <input
+                type="checkbox"
+                checked={useMockAuth}
+                onChange={(e) => setUseMockAuth(e.target.checked)}
+                style={{ marginRight: '5px' }}
+              />
+              Modo Demo (sem API)
+            </label>
+          </div>
+
+          {/* Informações de login demo */}
+          {useMockAuth && (
+            <div style={{
+              backgroundColor: '#f0f8ff',
+              padding: '15px',
+              borderRadius: '8px',
+              marginBottom: '20px',
+              fontSize: '14px',
+              color: '#333'
+            }}>
+              <strong>Contas de teste:</strong>
+              <ul style={{ margin: '10px 0 0 20px', listStyle: 'disc' }}>
+                <li>admin@test.com / 123456</li>
+                <li>user@test.com / 123456</li>
+                <li>demo@test.com / demo123</li>
+              </ul>
+            </div>
+          )}
+
           {/* Toggle Login/Register */}
           <div className="toggle-container">
             <button
