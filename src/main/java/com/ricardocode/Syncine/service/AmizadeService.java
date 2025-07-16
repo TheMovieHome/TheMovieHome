@@ -60,6 +60,13 @@ public class AmizadeService {
         return amizadeRepository.save(amizade);
     }
 
+    @Transactional
+    public void excluirAmizade(Long idAmizade) {
+        Amizade amizade = amizadeRepository.findById(idAmizade)
+                .orElseThrow(() -> new IllegalArgumentException("Amizade não encontrada."));
+        amizadeRepository.delete(amizade);
+    }
+
     public List<Amizade> listarSolicitacoesPendentes(Long idUsuario) {
         return amizadeRepository.findBySolicitadoIdAndStatus(idUsuario, StatusPedido.PENDENTE);
     }
