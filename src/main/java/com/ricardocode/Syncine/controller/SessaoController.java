@@ -3,6 +3,7 @@ package com.ricardocode.Syncine.controller;
 import com.ricardocode.Syncine.model.Sessao;
 import com.ricardocode.Syncine.model.enums.Visibilidade;
 import com.ricardocode.Syncine.service.SessaoService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,5 +31,33 @@ public class SessaoController {
     @GetMapping("/publicas")
     public ResponseEntity<List<Sessao>> listarSessoesPublicas() {
         return ResponseEntity.ok(sessaoService.listarSessoesPublicas());
+    }
+
+    // Entrar na sessão (adicionar participante)
+    @PostMapping("/{sessaoId}/entrar/{usuarioId}")
+    public ResponseEntity<Sessao> entrarSessao(
+            @PathVariable Long sessaoId,
+            @PathVariable Long usuarioId
+    ) {
+        try {
+            Sessao sessaoAtualizada = sessaoService.adicionarParticipante(sessaoId, usuarioId);
+            return ResponseEntity.ok(sessaoAtualizada);
+        } catch (EntityNotFoundException ex) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // Sair da sessão (remover participante)
+    @DeleteMapping("/{sessaoId}/sair/{usuarioId}")
+    public ResponseEntity<Void> sairSessao(
+            @PathVariable Long sessaoId,
+            @PathVariable Long usuarioId
+    ) {
+        try {
+            sessaoService.removerParticipante(sessaoId, usuarioId);
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException ex) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
