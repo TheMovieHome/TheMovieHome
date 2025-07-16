@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 
 
@@ -29,4 +32,10 @@ public class Usuario {
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews;
+
+
+    @ElementCollection(fetch = FetchType.LAZY) // LAZY é sempre melhor para coleções
+    @CollectionTable(name = "usuario_watchlist", joinColumns = @JoinColumn(name = "usuario_id"))
+    @Column(name = "imdb_id")
+    private Set<String> listaDeDesejo = new HashSet<>();
 }

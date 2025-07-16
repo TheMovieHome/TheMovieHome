@@ -69,7 +69,7 @@ public class ReviewService {
                 )).collect(Collectors.toList());
     }
 
-    public void deletarReview(Long reviewId, Long usuarioId) {
+    public void deleteReview(Long reviewId, Long usuarioId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("Review não encontrada com o id: " + reviewId));
 

@@ -55,7 +55,7 @@ public class ReviewController {
         Long usuarioId = 1L;
 
         try {
-            reviewService.deletarReview(id, usuarioId);
+            reviewService.deleteReview(id, usuarioId);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
