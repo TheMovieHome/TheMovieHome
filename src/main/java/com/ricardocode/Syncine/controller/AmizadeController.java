@@ -40,7 +40,14 @@ public class AmizadeController {
         return ResponseEntity.ok(amizadeService.listarAmigos(idUsuario));
     }
 
-    // Verificar statusd e amizade
+    // Deletar Amizade
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluirAmizade(@PathVariable Long id) {
+        amizadeService.excluirAmizade(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Verificar status de amizade
     @GetMapping("/verificar")
     public ResponseEntity<?> verificarAmizade(@RequestParam Long id1, @RequestParam Long id2) {
         return amizadeService.verificarAmizade(id1, id2)
