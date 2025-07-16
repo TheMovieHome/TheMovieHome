@@ -5,6 +5,7 @@ import com.ricardocode.Syncine.model.Usuario;
 import com.ricardocode.Syncine.model.enums.Visibilidade;
 import com.ricardocode.Syncine.repository.SessaoRepository;
 import com.ricardocode.Syncine.repository.UsuarioRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,11 +33,40 @@ public class SessaoService {
         sessao.setVisibilidade(visibilidade);
         sessao.setCodigoAcesso(codigoAcesso);
         sessao.setDono(dono);
+        sessao.getParticipantes().add(dono);
 
         return sessaoRepository.save(sessao);
     }
 
     public List<Sessao> listarSessoesPublicas() {
         return sessaoRepository.findByVisibilidade(Visibilidade.PUBLICA);
+    }
+
+    @Transactional
+    public Sessao adicionarParticipante(Long sessaoId, Long usuarioId) {
+        Sessao sessao = sessaoRepository.findById(sessaoId)
+                .orElseThrow(() -> new EntityNotFoundException("Sessão não encontrada"));
+        Usuario usuario = userRepository.findById(usuarioId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+        sessao.getParticipantes().add(usuario);
+
+        return sessaoRepository.save(sessao);
+    }
+
+    @Transactional
+    public void removerParticipante(Long sessaoId, Long usuarioId) {
+        Sessao sessao = sessaoRepository.findById(sessaoId)
+                .orElseThrow(() -> new EntityNotFoundException("Sessão não encontrada"));
+        Usuario usuario = userRepository.findById(usuarioId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+        sessao.getParticipantes().remove(usuario);
+
+        if (sessao.getParticipantes().isEmpty()) {
+            sessaoRepository.delete(sessao);
+        } else {
+            sessaoRepository.save(sessao);
+        }
     }
 }
