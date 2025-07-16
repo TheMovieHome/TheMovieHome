@@ -46,10 +46,24 @@ public class ConviteSessaoService {
         return conviteRepo.findByConvidadoIdAndStatus(idConvidado, StatusPedido.PENDENTE);
     }
 
+    @Transactional
     public void responderConvite(Long conviteId, StatusPedido novaResposta) {
         ConviteSessao convite = conviteRepo.findById(conviteId)
                 .orElseThrow(() -> new EntityNotFoundException("Convite não encontrado"));
+
+        if (convite.getStatus() != StatusPedido.PENDENTE) {
+            throw new IllegalStateException("Convite já foi respondido.");
+        }
+
         convite.setStatus(novaResposta);
         conviteRepo.save(convite);
+
+        if (novaResposta == StatusPedido.ACEITO) {
+            Sessao sessao = convite.getSessao();
+            Usuario convidado = convite.getConvidado();
+
+            sessao.getParticipantes().add(convidado);
+            sessaoRepo.save(sessao);
+        }
     }
 }
