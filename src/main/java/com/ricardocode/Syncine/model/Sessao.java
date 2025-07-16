@@ -42,4 +42,7 @@ public class Sessao {
     @JoinTable(name = "sessao_participantes", joinColumns = @JoinColumn(name = "sessao_id"), inverseJoinColumns = @JoinColumn(name = "usuario_id")
     )
     private Set<Usuario> participantes = new HashSet<>();
+
+    @OneToMany(mappedBy = "sessao", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<ConviteSessao> convites = new HashSet<>();
 }
