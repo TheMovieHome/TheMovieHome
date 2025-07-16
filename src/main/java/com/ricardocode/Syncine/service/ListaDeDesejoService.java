@@ -11,7 +11,7 @@ import java.util.Set;
 @Transactional
 public class ListaDeDesejoService {
 
-    private final UsuarioRepository usuarioRepository
+    private final UsuarioRepository usuarioRepository;
 
     public ListaDeDesejoService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
