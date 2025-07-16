@@ -1,9 +1,6 @@
 package com.ricardocode.Syncine.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,12 +9,19 @@ import lombok.Setter;
 @Setter
 public class Review {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private int rating;
-    private String reviewText;
+
+    @Column(nullable = false)
+    private String imdbId;
+
+    private int classificacao;
+
+    @Column(length = 5000)
+    private String textoReview;
 
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false )
-    private Usuario user;
+    private Usuario usuario;
 
 }
