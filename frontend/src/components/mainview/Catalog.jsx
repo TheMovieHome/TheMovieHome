@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './Catalog.css';
 
 const MovieCatalog = ({ user, onLogout }) => {
@@ -19,6 +19,9 @@ const MovieCatalog = ({ user, onLogout }) => {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [friends, setFriends] = useState([]);
   const [activeTab, setActiveTab] = useState('search'); // 'search', 'requests', 'friends'
+
+  // Refs para os carrosséis
+  const carouselRefs = useRef({});
 
   // Categorias temáticas com filmes específicos
   const movieCategories = [
@@ -307,6 +310,43 @@ const MovieCatalog = ({ user, onLogout }) => {
       ]
     }
   ];
+
+  // Função para rolar o carrossel
+  const scrollCarousel = (categoryId, direction) => {
+    const carousel = carouselRefs.current[categoryId];
+    if (!carousel) return;
+
+    const scrollAmount = 240; // Largura aproximada de um card + gap
+    const currentScroll = carousel.scrollLeft;
+    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+
+    if (direction === 'left') {
+      carousel.scrollTo({
+        left: Math.max(0, currentScroll - scrollAmount),
+        behavior: 'smooth'
+      });
+    } else {
+      carousel.scrollTo({
+        left: Math.min(maxScroll, currentScroll + scrollAmount),
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Função para verificar se pode rolar
+  const canScroll = (categoryId, direction) => {
+    const carousel = carouselRefs.current[categoryId];
+    if (!carousel) return false;
+
+    const currentScroll = carousel.scrollLeft;
+    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+
+    if (direction === 'left') {
+      return currentScroll > 0;
+    } else {
+      return currentScroll < maxScroll;
+    }
+  };
 
   // Função para buscar filmes similares via API
   const fetchSimilarMovies = async (searchTerm) => {
@@ -601,239 +641,239 @@ const MovieCatalog = ({ user, onLogout }) => {
   };
 
   // Função para alternar a barra lateral de amizades
-  const toggleFriendsSidebar = () => {
-    setIsFriendsSidebarOpen(!isFriendsSidebarOpen);
+      const toggleFriendsSidebar = () => {
+        setIsFriendsSidebarOpen(!isFriendsSidebarOpen);
 
-    // Recarregar dados quando abrir a barra lateral
-    if (!isFriendsSidebarOpen && user && user.id) {
-      loadPendingRequests();
-      loadFriends();
-    }
-  };
+        // Recarregar dados quando abrir a barra lateral
+        if (!isFriendsSidebarOpen && user && user.id) {
+          loadPendingRequests();
+          loadFriends();
+        }
+      };
 
-  // Função para obter avatar baseado no nome do usuário
-  const getUserAvatar = (userName) => {
-    const avatars = ['👤', '👩', '👨', '👩‍💼', '👨‍💻', '👩‍🎨', '👨‍🔬', '👩‍🏫', '👨‍⚕️', '👩‍⚕️'];
-    const index = userName ? userName.length % avatars.length : 0;
-    return avatars[index];
-  };
+      // Função para obter avatar baseado no nome do usuário
+      const getUserAvatar = (userName) => {
+        const avatars = ['👤', '👩', '👨', '👩‍💼', '👨‍💻', '👩‍🎨', '👨‍🔬', '👩‍🏫', '👨‍⚕️', '👩‍⚕️'];
+        const index = userName ? userName.length % avatars.length : 0;
+        return avatars[index];
+      };
 
-  // Função para verificar se uma solicitação já foi enviada
-  const isRequestSent = (targetUserId) => {
-    return sentRequests.includes(targetUserId);
-  };
+      // Função para verificar se uma solicitação já foi enviada
+      const isRequestSent = (targetUserId) => {
+        return sentRequests.includes(targetUserId);
+      };
 
-  // Função para verificar se existe solicitação pendente
-  const hasPendingRequest = (targetUserId) => {
-    return pendingRequests.some(req =>
-      (req.solicitante.id === user.id && req.solicitado.id === targetUserId) ||
-      (req.solicitante.id === targetUserId && req.solicitado.id === user.id)
-    );
-  };
+      // Função para verificar se existe solicitação pendente
+      const hasPendingRequest = (targetUserId) => {
+        return pendingRequests.some(req =>
+          (req.solicitante.id === user.id && req.solicitado.id === targetUserId) ||
+          (req.solicitante.id === targetUserId && req.solicitado.id === user.id)
+        );
+      };
 
-  // Função para verificar se são amigos
-  const areFriends = (targetUserId) => {
-    return friends.some(friend =>
-      (friend.solicitante.id === targetUserId && friend.solicitado.id === user.id) ||
-      (friend.solicitante.id === user.id && friend.solicitado.id === targetUserId)
-    );
-  };
+      // Função para verificar se são amigos
+      const areFriends = (targetUserId) => {
+        return friends.some(friend =>
+          (friend.solicitante.id === targetUserId && friend.solicitado.id === user.id) ||
+          (friend.solicitante.id === user.id && friend.solicitado.id === targetUserId)
+        );
+      };
 
-  // Função para obter o status do botão de amizade
-  const getFriendButtonStatus = (targetUserId) => {
-    if (isRequestSent(targetUserId)) {
-      return { text: '✓ Enviado', disabled: true, className: 'sent' };
-    }
+      // Função para obter o status do botão de amizade
+      const getFriendButtonStatus = (targetUserId) => {
+        if (isRequestSent(targetUserId)) {
+          return { text: '✓ Enviado', disabled: true, className: 'sent' };
+        }
 
-    if (hasPendingRequest(targetUserId)) {
-      return { text: '⏳ Pendente', disabled: true, className: 'pending' };
-    }
+        if (hasPendingRequest(targetUserId)) {
+          return { text: '⏳ Pendente', disabled: true, className: 'pending' };
+        }
 
-    if (areFriends(targetUserId)) {
-      return { text: '✓ Amigos', disabled: true, className: 'friends' };
-    }
+        if (areFriends(targetUserId)) {
+          return { text: '✓ Amigos', disabled: true, className: 'friends' };
+        }
 
-    return { text: '+ Adicionar', disabled: false, className: '' };
-  };
+        return { text: '+ Adicionar', disabled: false, className: '' };
+      };
 
-  // Função para obter o nome do amigo
-  const getFriendName = (friendship) => {
-    if (friendship.solicitante.id === user.id) {
-      return friendship.solicitado.name;
-    } else {
-      return friendship.solicitante.name;
-    }
-  };
+      // Função para obter o nome do amigo
+      const getFriendName = (friendship) => {
+        if (friendship.solicitante.id === user.id) {
+          return friendship.solicitado.name;
+        } else {
+          return friendship.solicitante.name;
+        }
+      };
 
-  // Função para obter o username do amigo
-  const getFriendUsername = (friendship) => {
-    if (friendship.solicitante.id === user.id) {
-      return friendship.solicitado.username || friendship.solicitado.email;
-    } else {
-      return friendship.solicitante.username || friendship.solicitante.email;
-    }
-  };
+      // Função para obter o username do amigo
+      const getFriendUsername = (friendship) => {
+        if (friendship.solicitante.id === user.id) {
+          return friendship.solicitado.username || friendship.solicitado.email;
+        } else {
+          return friendship.solicitante.username || friendship.solicitante.email;
+        }
+      };
 
-  // Função chamada quando clica em um filme específico
-  const handleMovieClick = (movie) => {
-    setSelectedMovie(movie);
-    // Para filmes da pesquisa, usa o título para buscar similares
-    const searchTermForSimilar = movie.searchTerm || movie.titulo || movie.Title || movie.title;
-    fetchSimilarMovies(searchTermForSimilar);
-  };
+      // Função chamada quando clica em um filme específico
+      const handleMovieClick = (movie) => {
+        setSelectedMovie(movie);
+        // Para filmes da pesquisa, usa o título para buscar similares
+        const searchTermForSimilar = movie.searchTerm || movie.titulo || movie.Title || movie.title;
+        fetchSimilarMovies(searchTermForSimilar);
+      };
 
-  // Função para voltar ao catálogo principal
-  const handleBackToCatalog = () => {
-    setSelectedMovie(null);
-    setSimilarMovies([]);
-  };
+      // Função para voltar ao catálogo principal
+      const handleBackToCatalog = () => {
+        setSelectedMovie(null);
+        setSimilarMovies([]);
+      };
 
-  // Função para limpar pesquisa
-  const handleClearSearch = () => {
-    setSearchTerm('');
-    setSearchResults([]);
-    setIsSearching(false);
-  };
+      // Função para limpar pesquisa
+      const handleClearSearch = () => {
+        setSearchTerm('');
+        setSearchResults([]);
+        setIsSearching(false);
+      };
 
-  // Função para obter propriedades do filme (compatibilidade entre DTOs e dados locais)
-  const getMovieProps = (movie) => {
-    return {
-      title: movie.title || movie.titulo || movie.Title,
-      year: movie.year || movie.ano || movie.Year,
-      poster: movie.poster || movie.Poster,
-      description: movie.description || movie.plot || movie.Plot,
-      imdbId: movie.imdbId || movie.imdbID,
-      type: movie.tipo || movie.Type
-    };
-  };
+      // Função para obter propriedades do filme (compatibilidade entre DTOs e dados locais)
+      const getMovieProps = (movie) => {
+        return {
+          title: movie.title || movie.titulo || movie.Title,
+          year: movie.year || movie.ano || movie.Year,
+          poster: movie.poster || movie.Poster,
+          description: movie.description || movie.plot || movie.Plot,
+          imdbId: movie.imdbId || movie.imdbID,
+          type: movie.tipo || movie.Type
+        };
+      };
 
-  // Função para renderizar o conteúdo da aba ativa
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'search':
-        return (
-          <>
-            <div className="friends-search-container">
-              <div className="friends-search-input-wrapper">
-                <input
-                  type="text"
-                  placeholder="Buscar usuários..."
-                  value={friendSearchTerm}
-                  onChange={(e) => setFriendSearchTerm(e.target.value)}
-                  className="friends-search-input"
-                />
-                <div className="friends-search-icon">
-                  {friendSearchLoading ? '⏳' : '🔍'}
+      // Função para renderizar o conteúdo da aba ativa
+      const renderTabContent = () => {
+        switch (activeTab) {
+          case 'search':
+            return (
+              <>
+                <div className="friends-search-container">
+                  <div className="friends-search-input-wrapper">
+                    <input
+                      type="text"
+                      placeholder="Buscar usuários..."
+                      value={friendSearchTerm}
+                      onChange={(e) => setFriendSearchTerm(e.target.value)}
+                      className="friends-search-input"
+                    />
+                    <div className="friends-search-icon">
+                      {friendSearchLoading ? '⏳' : '🔍'}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="friends-search-results">
-              {friendSearchResults.length > 0 ? (
-                friendSearchResults.map(foundUser => {
-                  const buttonStatus = getFriendButtonStatus(foundUser.id);
-                  return (
-                    <div key={foundUser.id} className="friend-result-item">
-                      <div className="friend-avatar">{getUserAvatar(foundUser.name)}</div>
+                <div className="friends-search-results">
+                  {friendSearchResults.length > 0 ? (
+                    friendSearchResults.map(foundUser => {
+                      const buttonStatus = getFriendButtonStatus(foundUser.id);
+                      return (
+                        <div key={foundUser.id} className="friend-result-item">
+                          <div className="friend-avatar">{getUserAvatar(foundUser.name)}</div>
+                          <div className="friend-info">
+                            <div className="friend-name">{foundUser.name}</div>
+                            <div className="friend-username">@{foundUser.username || foundUser.email}</div>
+                          </div>
+                          <button
+                            onClick={() => sendFriendRequest(foundUser.id)}
+                            disabled={buttonStatus.disabled}
+                            className={`add-friend-btn ${buttonStatus.className}`}
+                          >
+                            {buttonStatus.text}
+                          </button>
+                        </div>
+                      );
+                    })
+                  ) : friendSearchTerm ? (
+                    <div className="no-friends-found">
+                      <p>Nenhum usuário encontrado</p>
+                    </div>
+                  ) : (
+                    <div className="friends-placeholder">
+                      <p>Digite para buscar usuários</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            );
+
+          case 'requests':
+            return (
+              <div className="friends-search-results">
+                {pendingRequests.length > 0 ? (
+                  pendingRequests.map(request => (
+                    <div key={request.id} className="friend-result-item">
+                      <div className="friend-avatar">{getUserAvatar(request.solicitante.name)}</div>
                       <div className="friend-info">
-                        <div className="friend-name">{foundUser.name}</div>
-                        <div className="friend-username">@{foundUser.username || foundUser.email}</div>
+                        <div className="friend-name">{request.solicitante.name}</div>
+                        <div className="friend-username">@{request.solicitante.username || request.solicitante.email}</div>
+                        <div className="request-date">
+                          {new Date(request.dataCriacao).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div className="request-actions">
+                        <button
+                          onClick={() => respondToFriendRequest(request.id, true)}
+                          className="accept-btn"
+                        >
+                          ✓ Aceitar
+                        </button>
+                        <button
+                          onClick={() => respondToFriendRequest(request.id, false)}
+                          className="reject-btn"
+                        >
+                          ✕ Rejeitar
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="friends-placeholder">
+                    <p>Nenhuma solicitação pendente</p>
+                  </div>
+                )}
+              </div>
+            );
+
+          case 'friends':
+            return (
+              <div className="friends-search-results">
+                {friends.length > 0 ? (
+                  friends.map(friendship => (
+                    <div key={friendship.id} className="friend-result-item">
+                      <div className="friend-avatar">{getUserAvatar(getFriendName(friendship))}</div>
+                      <div className="friend-info">
+                        <div className="friend-name">{getFriendName(friendship)}</div>
+                        <div className="friend-username">@{getFriendUsername(friendship)}</div>
+                        <div className="friendship-date">
+                          Amigos desde {new Date(friendship.dataCriacao).toLocaleDateString()}
+                        </div>
                       </div>
                       <button
-                        onClick={() => sendFriendRequest(foundUser.id)}
-                        disabled={buttonStatus.disabled}
-                        className={`add-friend-btn ${buttonStatus.className}`}
+                        onClick={() => removeFriend(friendship.id)}
+                        className="remove-friend-btn"
                       >
-                        {buttonStatus.text}
+                        ✕ Remover
                       </button>
                     </div>
-                  );
-                })
-              ) : friendSearchTerm ? (
-                <div className="no-friends-found">
-                  <p>Nenhum usuário encontrado</p>
-                </div>
-              ) : (
-                <div className="friends-placeholder">
-                  <p>Digite para buscar usuários</p>
-                </div>
-              )}
-            </div>
-          </>
-        );
-
-      case 'requests':
-        return (
-          <div className="friends-search-results">
-            {pendingRequests.length > 0 ? (
-              pendingRequests.map(request => (
-                <div key={request.id} className="friend-result-item">
-                  <div className="friend-avatar">{getUserAvatar(request.solicitante.name)}</div>
-                  <div className="friend-info">
-                    <div className="friend-name">{request.solicitante.name}</div>
-                    <div className="friend-username">@{request.solicitante.username || request.solicitante.email}</div>
-                    <div className="request-date">
-                      {new Date(request.dataCriacao).toLocaleDateString()}
-                    </div>
+                  ))
+                ) : (
+                  <div className="friends-placeholder">
+                    <p>Você ainda não tem amigos</p>
                   </div>
-                  <div className="request-actions">
-                    <button
-                      onClick={() => respondToFriendRequest(request.id, true)}
-                      className="accept-btn"
-                    >
-                      ✓ Aceitar
-                    </button>
-                    <button
-                      onClick={() => respondToFriendRequest(request.id, false)}
-                      className="reject-btn"
-                    >
-                      ✕ Rejeitar
-                    </button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="friends-placeholder">
-                <p>Nenhuma solicitação pendente</p>
+                )}
               </div>
-            )}
-          </div>
-        );
+            );
 
-      case 'friends':
-        return (
-          <div className="friends-search-results">
-            {friends.length > 0 ? (
-              friends.map(friendship => (
-                <div key={friendship.id} className="friend-result-item">
-                  <div className="friend-avatar">{getUserAvatar(getFriendName(friendship))}</div>
-                  <div className="friend-info">
-                    <div className="friend-name">{getFriendName(friendship)}</div>
-                    <div className="friend-username">@{getFriendUsername(friendship)}</div>
-                    <div className="friendship-date">
-                      Amigos desde {new Date(friendship.dataCriacao).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => removeFriend(friendship.id)}
-                    className="remove-friend-btn"
-                  >
-                    ✕ Remover
-                  </button>
-                </div>
-              ))
-            ) : (
-              <div className="friends-placeholder">
-                <p>Você ainda não tem amigos</p>
-              </div>
-            )}
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
+          default:
+            return null;
+        }
+      };
 
   // Se um filme foi selecionado, mostra a página de detalhes
   if (selectedMovie) {
@@ -844,9 +884,23 @@ const MovieCatalog = ({ user, onLogout }) => {
         {/* Header - Página de detalhes do filme */}
         <header className="catalog-header">
           <div className="header-content">
-            {/* Logo - à esquerda */}
-            <div className="logo">
-              <h1>🎬 CineCatalog</h1>
+            {/* Menu do usuário - MOVIDO PARA A ESQUERDA */}
+            <div className="user-menu">
+              <button
+                className="menu-icon-btn"
+                onClick={toggleFriendsSidebar}
+                title="Amigos"
+              >
+                <div className="menu-icon">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                {pendingRequests.length > 0 && (
+                  <span className="notification-badge">{pendingRequests.length}</span>
+                )}
+              </button>
+              <span className="user-welcome">Olá, {user.name}!</span>
             </div>
 
             {/* Botão de voltar */}
@@ -854,19 +908,11 @@ const MovieCatalog = ({ user, onLogout }) => {
               ← Voltar ao Catálogo
             </button>
 
-            {/* Menu do usuário */}
-            <div className="user-menu">
-              <button onClick={toggleFriendsSidebar} className="friends-btn">
-                👥 Amigos
-                {pendingRequests.length > 0 && (
-                  <span className="notification-badge">{pendingRequests.length}</span>
-                )}
-              </button>
-              <span className="user-welcome">Olá, {user.name}!</span>
-              <button onClick={onLogout} className="logout-btn">
-                Sair
-              </button>
-            </div>
+
+            {/* Botão de logout - extrema direita */}
+            <button onClick={onLogout} className="logout-btn">
+              Sair
+            </button>
           </div>
         </header>
 
@@ -983,9 +1029,23 @@ const MovieCatalog = ({ user, onLogout }) => {
       {/* Header - Página principal */}
       <header className="catalog-header">
         <div className="header-content">
-          {/* Logo - à esquerda */}
-          <div className="logo">
-            <h1>🎬 CineCatalog</h1>
+          {/* Menu do usuário - MOVIDO PARA A ESQUERDA */}
+          <div className="user-menu">
+            <button
+              className="menu-icon-btn"
+              onClick={toggleFriendsSidebar}
+              title="Amigos"
+            >
+              <div className="menu-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              {pendingRequests.length > 0 && (
+                <span className="notification-badge">{pendingRequests.length}</span>
+              )}
+            </button>
+            <span className="user-welcome">Olá, {user.name}!</span>
           </div>
 
           {/* Barra de Pesquisa - centralizada absolutamente */}
@@ -1018,19 +1078,11 @@ const MovieCatalog = ({ user, onLogout }) => {
             </div>
           </div>
 
-          {/* Menu do usuário - à direita */}
-          <div className="user-menu">
-            <button onClick={toggleFriendsSidebar} className="friends-btn">
-              👥 Amigos
-              {pendingRequests.length > 0 && (
-                <span className="notification-badge">{pendingRequests.length}</span>
-              )}
-            </button>
-            <span className="user-welcome">Olá, {user.name}!</span>
-            <button onClick={onLogout} className="logout-btn">
-              Sair
-            </button>
-          </div>
+
+          {/* Botão de logout - extrema direita */}
+          <button onClick={onLogout} className="logout-btn">
+            Sair
+          </button>
         </div>
       </header>
 
@@ -1091,13 +1143,27 @@ const MovieCatalog = ({ user, onLogout }) => {
             )}
           </section>
         ) : (
-          // Categorias temáticas
+          // Categorias temáticas COM SETAS
           movieCategories.map(category => (
             <section key={category.id} className="category-section">
               <h2 className="category-title">{category.name}</h2>
 
               <div className="movies-carousel">
-                <div className="movies-row">
+                {/* Seta esquerda */}
+                <button
+                  className="carousel-arrow left"
+                  onClick={() => scrollCarousel(category.id, 'left')}
+                  disabled={!canScroll(category.id, 'left')}
+                  aria-label="Rolar para a esquerda"
+                >
+                  ‹
+                </button>
+
+                {/* Container dos filmes */}
+                <div
+                  className="movies-row"
+                  ref={el => carouselRefs.current[category.id] = el}
+                >
                   {category.movies.map(movie => (
                     <div
                       key={movie.id}
@@ -1117,6 +1183,16 @@ const MovieCatalog = ({ user, onLogout }) => {
                     </div>
                   ))}
                 </div>
+
+                {/* Seta direita */}
+                <button
+                  className="carousel-arrow right"
+                  onClick={() => scrollCarousel(category.id, 'right')}
+                  disabled={!canScroll(category.id, 'right')}
+                  aria-label="Rolar para a direita"
+                >
+                  ›
+                </button>
               </div>
             </section>
           ))

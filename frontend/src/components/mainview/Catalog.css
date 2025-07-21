@@ -177,19 +177,66 @@
   transform: scale(1.05);
 }
 
-/* User Menu - Sempre na extrema direita */
+/* User Menu - Ajustado para o lado esquerdo */
 .user-menu {
   display: flex;
   align-items: center;
   gap: 1rem;
   flex: 0 0 auto;
-  margin-left: auto;
+  margin-right: auto; /* Mudança: de margin-left: auto para margin-right: auto */
 }
 
 .user-welcome {
   color: #9ca3af;
   font-size: 0.875rem;
   white-space: nowrap;
+}
+
+/* Menu Icon Button - Ícone de hambúrguer */
+.menu-icon-btn {
+  padding: 0.5rem;
+  background-color: transparent;
+  border: 2px solid #4ade80;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+}
+
+.menu-icon-btn:hover {
+  background-color: rgba(74, 222, 128, 0.1);
+  border-color: #22c55e;
+  transform: scale(1.05);
+}
+
+.menu-icon {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 20px;
+  height: 16px;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu-icon span {
+  display: block;
+  height: 3px;
+  width: 100%;
+  background-color: #4ade80;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Animação quando hover */
+.menu-icon-btn:hover .menu-icon span {
+  background-color: #22c55e;
+  transform: scaleX(1.1);
 }
 
 /* Friends Button */
@@ -248,24 +295,24 @@
   transform: scale(1.05);
 }
 
-/* Friends Sidebar */
+/* Friends Sidebar - MOVIDO PARA A ESQUERDA */
 .friends-sidebar {
   position: fixed;
   top: 0;
-  right: -400px;
+  left: -400px; /* Mudança: de right: -400px para left: -400px */
   width: 400px;
   height: 100vh;
   background-color: #1a1a1a;
-  border-left: 2px solid #2d2d2d;
+  border-right: 2px solid #2d2d2d; /* Mudança: de border-left para border-right */
   z-index: 1000;
-  transition: right 0.3s ease;
+  transition: left 0.3s ease; /* Mudança: de right para left */
   display: flex;
   flex-direction: column;
-  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3); /* Mudança: de -5px para 5px */
 }
 
 .friends-sidebar.open {
-  right: 0;
+  left: 0; /* Mudança: de right: 0 para left: 0 */
 }
 
 .friends-sidebar-header {
@@ -633,9 +680,10 @@
   border-left: 4px solid #4ade80;
 }
 
-/* Movies Carousel */
+/* Movies Carousel - SETAS MELHORADAS E CENTRALIZADAS */
 .movies-carousel {
   position: relative;
+  padding: 0 4rem; /* Mais espaço para as setas */
 }
 
 .movies-row {
@@ -644,24 +692,82 @@
   overflow-x: auto;
   padding: 1rem 0.5rem;
   scroll-behavior: smooth;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
 }
 
 .movies-row::-webkit-scrollbar {
-  height: 8px;
+  display: none; /* Chrome/Safari */
 }
 
-.movies-row::-webkit-scrollbar-track {
-  background: #2d2d2d;
-  border-radius: 4px;
+/* Setas de navegação do carrossel - MELHORADAS */
+.carousel-arrow {
+  position: absolute;
+  /* CENTRALIZADA NA ALTURA DA IMAGEM DO FILME */
+  top: calc(50% - 50px); /* Ajusta para centralizar na altura da imagem (280px/2 - 50px do botão/2) */
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.95), rgba(34, 197, 94, 0.95));
+  color: #000;
+  border: none;
+  border-radius: 12px; /* Bordas mais arredondadas */
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.4rem;
+  font-weight: 900;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 15;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(74, 222, 128, 0.3);
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
-.movies-row::-webkit-scrollbar-thumb {
-  background: #4ade80;
-  border-radius: 4px;
+.carousel-arrow:hover {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  transform: translateY(-2px) scale(1.08);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(34, 197, 94, 0.4);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-.movies-row::-webkit-scrollbar-thumb:hover {
-  background: #22c55e;
+.carousel-arrow:active {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(74, 222, 128, 0.3);
+}
+
+.carousel-arrow.left {
+  left: 1rem;
+}
+
+.carousel-arrow.right {
+  right: 1rem;
+}
+
+.carousel-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.8), rgba(75, 85, 99, 0.8));
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.carousel-arrow:disabled:hover {
+  transform: none;
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.8), rgba(75, 85, 99, 0.8));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ícones das setas melhorados */
+.carousel-arrow.left::before {
+  content: '‹';
+  margin-right: 2px; /* Pequeno ajuste visual */
+}
+
+.carousel-arrow.right::before {
+  content: '›';
+  margin-left: 2px; /* Pequeno ajuste visual */
 }
 
 /* Movie Cards */
@@ -693,7 +799,7 @@
 }
 
 .carousel-card .movie-poster {
-  height: 280px;
+  height: 280px; /* Altura da imagem para centralizar as setas */
 }
 
 .movie-poster img {
@@ -901,7 +1007,19 @@
 
   .friends-sidebar {
     width: 350px;
-    right: -350px;
+    left: -350px; /* Mudança: de right: -350px para left: -350px */
+  }
+
+  /* Setas responsivas */
+  .carousel-arrow {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+    top: calc(50% - 45px); /* Ajuste para tablet */
+  }
+
+  .movies-carousel {
+    padding: 0 3rem;
   }
 }
 
@@ -958,7 +1076,7 @@
 
   .friends-sidebar {
     width: 300px;
-    right: -300px;
+    left: -300px; /* Mudança: de right: -300px para left: -300px */
   }
 
   .friends-btn {
@@ -979,6 +1097,39 @@
   .accept-btn, .reject-btn {
     padding: 0.3rem 0.6rem;
     font-size: 0.65rem;
+  }
+
+  /* Menu Icon Button - Responsivo */
+  .menu-icon-btn {
+    padding: 0.4rem;
+    width: 40px;
+    height: 40px;
+  }
+
+  .menu-icon {
+    width: 18px;
+    height: 14px;
+    gap: 3px;
+  }
+
+  .menu-icon span {
+    height: 2.5px;
+  }
+
+  /* Setas responsivas mobile */
+  .carousel-card .movie-poster {
+    height: 200px; /* Altura menor no mobile */
+  }
+
+  .carousel-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    top: calc(50% - 35px); /* Ajuste para mobile */
+  }
+
+  .movies-carousel {
+    padding: 0 2.5rem;
   }
 }
 
@@ -1014,7 +1165,7 @@
   }
 
   .carousel-card .movie-poster {
-    height: 200px;
+    height: 180px; /* Altura ainda menor para mobile pequeno */
   }
 
   .category-title {
@@ -1028,12 +1179,7 @@
 
   .friends-sidebar {
     width: 280px;
-    right: -280px;
-  }
-
-  .friends-btn {
-    padding: 0.3rem 0.6rem;
-    font-size: 0.7rem;
+    left: -280px; /* Mudança: de right: -280px para left: -280px */
   }
 
   .friend-result-item {
@@ -1073,12 +1219,42 @@
     padding: 0.25rem 0.5rem;
     font-size: 0.6rem;
   }
+
+  /* Menu Icon Button - Mobile */
+  .menu-icon-btn {
+    padding: 0.3rem;
+    width: 36px;
+    height: 36px;
+  }
+
+  .menu-icon {
+    width: 16px;
+    height: 12px;
+    gap: 3px;
+  }
+
+  .menu-icon span {
+    height: 2px;
+  }
+
+  /* Setas responsivas mobile pequeno */
+  .carousel-arrow {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+    top: calc(50% - 30px); /* Ajuste para mobile pequeno */
+    border-radius: 10px;
+  }
+
+  .movies-carousel {
+    padding: 0 2rem;
+  }
 }
 
 /* Animações adicionais */
-@keyframes slideInRight {
+@keyframes slideInLeft {
   from {
-    transform: translateX(100%);
+    transform: translateX(-100%); /* Mudança: de translateX(100%) para translateX(-100%) */
     opacity: 0;
   }
   to {
@@ -1106,7 +1282,7 @@
 }
 
 .friends-sidebar.open {
-  animation: slideInRight 0.3s ease;
+  animation: slideInLeft 0.3s ease; /* Mudança: de slideInRight para slideInLeft */
 }
 
 .sidebar-overlay {
