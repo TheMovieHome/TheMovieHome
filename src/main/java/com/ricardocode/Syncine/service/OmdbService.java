@@ -21,7 +21,7 @@ public class OmdbService {
     private final String OMDB_URL = "https://www.omdbapi.com/";
 
 
-    //? esse metodo vai procurar um filme pelo nome em especifico
+    // esse metodo vai procurar um filme pelo nome em especifico
     public ResultadoFilmeDTO procurarFilmesPorTitulo(String titulo) {
         String url = OMDB_URL + "?apikey=" + apiKey + "&t=" + titulo;
         try {
