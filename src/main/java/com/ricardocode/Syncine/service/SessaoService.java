@@ -17,11 +17,11 @@ import java.util.List;
 public class SessaoService {
 
     private final SessaoRepository sessaoRepository;
-    private final UsuarioRepository userRepository;
+    private final UsuarioRepository usuarioRepository;
 
     @Transactional
     public Sessao criarSessao(String nome, Visibilidade visibilidade, String codigoAcesso, Long donoId) {
-        Usuario dono = userRepository.findById(donoId)
+        Usuario dono = usuarioRepository.findById(donoId)
                 .orElseThrow(() -> new IllegalArgumentException("Dono da sessão não encontrado."));
 
         if (visibilidade == Visibilidade.PRIVADA && (codigoAcesso == null || codigoAcesso.length() != 6)) {
@@ -46,7 +46,7 @@ public class SessaoService {
     public Sessao adicionarParticipante(Long sessaoId, Long usuarioId) {
         Sessao sessao = sessaoRepository.findById(sessaoId)
                 .orElseThrow(() -> new EntityNotFoundException("Sessão não encontrada"));
-        Usuario usuario = userRepository.findById(usuarioId)
+        Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
         sessao.getParticipantes().add(usuario);
@@ -58,7 +58,7 @@ public class SessaoService {
     public void removerParticipante(Long sessaoId, Long usuarioId) {
         Sessao sessao = sessaoRepository.findById(sessaoId)
                 .orElseThrow(() -> new EntityNotFoundException("Sessão não encontrada"));
-        Usuario usuario = userRepository.findById(usuarioId)
+        Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
         sessao.getParticipantes().remove(usuario);

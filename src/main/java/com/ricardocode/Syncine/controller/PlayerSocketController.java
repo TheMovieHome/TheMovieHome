@@ -21,7 +21,7 @@ public class PlayerSocketController {
 
     @MessageMapping("/player/acao") // Cliente envia para /app/player/acao
     public void receberAcao(@Payload PlayerActionRequestDTO acaoDTO) {
-        Usuario usuario = usuarioService.getUserById(acaoDTO.getUsuarioId());
+        Usuario usuario = usuarioService.BuscarUsuarioID(acaoDTO.getUsuarioId());
 
         PlayerActionResponseDTO responseDTO = new PlayerActionResponseDTO();
         responseDTO.setTipoAcao(acaoDTO.getTipoAcao());

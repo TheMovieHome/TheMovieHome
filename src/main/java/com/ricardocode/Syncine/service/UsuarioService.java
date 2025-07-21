@@ -11,18 +11,18 @@ import java.util.List;
 
 @Service
 public class UsuarioService {
-    private final UsuarioRepository userRepository;
+    private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
 
 
     public UsuarioService(UsuarioRepository userRepository, PasswordEncoder passwordEncoder ) {
-        this.userRepository = userRepository;
+        this.usuarioRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Usuario registerNewUser(UserDTO userDto) {
-        if (userRepository.findByEmail(userDto.email()).isPresent()){
+    public Usuario registrarNovoUsuario(UserDTO userDto) {
+        if (usuarioRepository.findByEmail(userDto.email()).isPresent()){
             throw new IllegalStateException("E-mail já cadastrado");
         }
 
@@ -33,32 +33,34 @@ public class UsuarioService {
 
         newUser.setPassword(passwordEncoder.encode(userDto.password()));
 
-        return userRepository.save(newUser);
+        return usuarioRepository.save(newUser);
 
     }
 
 
     public List<Usuario> getUsers() {
-        return userRepository.findAll();
+        return usuarioRepository.findAll();
     }
 
 
-    public Usuario getUserById(long id) {
-        return userRepository.findById(id).orElseThrow(() ->
+    public Usuario BuscarUsuarioID(long id) {
+        return usuarioRepository.findById(id).orElseThrow(() ->
                 new IllegalStateException("Usuario" + id + "não encontrado"));
     }
 
+    public Usuario buscarUsuarioNome(String nome) {
+        return usuarioRepository.findByUsername(nome)
+                .orElseThrow(() -> new RuntimeException("Usuário com nome '" + nome + "' não encontrado."));}
 
-
-    public void deleteUserById(long id) {
-        if (!userRepository.existsById(id)) {
+    public void deletarUsuarioId(long id) {
+        if (!usuarioRepository.existsById(id)) {
             throw new IllegalStateException("usuario não encontrado");
         }
-        userRepository.deleteById(id);
+        usuarioRepository.deleteById(id);
     }
 
-    public Usuario updateUser(Long user, UserDTO userDto) {
-        Usuario existingUser = getUserById(user);
+    public Usuario AtualizarUsuario(Long user, UserDTO userDto) {
+        Usuario existingUser = BuscarUsuarioID(user);
         if (userDto.username() != null) {
             existingUser.setUsername(userDto.username());
         }
@@ -68,7 +70,7 @@ public class UsuarioService {
         if (userDto.password() != null) {
             existingUser.setPassword(passwordEncoder.encode(userDto.password()));
         }
-        return userRepository.save(existingUser);
+        return usuarioRepository.save(existingUser);
 
     }
 

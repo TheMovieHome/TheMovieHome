@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './Catalog.css';
 
 const MovieCatalog = ({ user, onLogout }) => {
@@ -9,6 +9,19 @@ const MovieCatalog = ({ user, onLogout }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
+
+  // Estados para a barra lateral de amizades
+  const [isFriendsSidebarOpen, setIsFriendsSidebarOpen] = useState(false);
+  const [friendSearchTerm, setFriendSearchTerm] = useState('');
+  const [friendSearchResults, setFriendSearchResults] = useState([]);
+  const [friendSearchLoading, setFriendSearchLoading] = useState(false);
+  const [sentRequests, setSentRequests] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [friends, setFriends] = useState([]);
+  const [activeTab, setActiveTab] = useState('search'); // 'search', 'requests', 'friends'
+
+  // Refs para os carrosséis
+  const carouselRefs = useRef({});
 
   // Categorias temáticas com filmes específicos
   const movieCategories = [
@@ -298,71 +311,188 @@ const MovieCatalog = ({ user, onLogout }) => {
     }
   ];
 
-// Função para buscar filmes similares via API
-const fetchSimilarMovies = async (searchTerm) => {
-  setLoading(true);
-  try {
-    const response = await fetch(`http://localhost:8080/api/movies/busca?termo=${encodeURIComponent(searchTerm)}`);
-    const data = await response.json();
+  // Função para rolar o carrossel
+  const scrollCarousel = (categoryId, direction) => {
+    const carousel = carouselRefs.current[categoryId];
+    if (!carousel) return;
 
-    console.log('Resposta da API (similares):', data); // Debug
+    const scrollAmount = 240; // Largura aproximada de um card + gap
+    const currentScroll = carousel.scrollLeft;
+    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
 
-    // Primeiro tenta acessar 'Search' (conforme retornado pela API)
-    if (data.Search && Array.isArray(data.Search)) {
-      setSimilarMovies(data.Search);
-    } else if (data.procura && Array.isArray(data.procura)) {
-      // Fallback para 'procura'
-      setSimilarMovies(data.procura);
+    if (direction === 'left') {
+      carousel.scrollTo({
+        left: Math.max(0, currentScroll - scrollAmount),
+        behavior: 'smooth'
+      });
     } else {
-      console.warn('Estrutura de dados inesperada:', data);
-      setSimilarMovies([]);
+      carousel.scrollTo({
+        left: Math.min(maxScroll, currentScroll + scrollAmount),
+        behavior: 'smooth'
+      });
     }
-  } catch (error) {
-    console.error('Erro ao buscar filmes similares:', error);
-    setSimilarMovies([]);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-// Função para pesquisar filmes
-const searchMovies = async (term) => {
-  if (!term.trim()) {
-    setSearchResults([]);
-    setIsSearching(false);
-    return;
-  }
+  // Função para verificar se pode rolar
+  const canScroll = (categoryId, direction) => {
+    const carousel = carouselRefs.current[categoryId];
+    if (!carousel) return false;
 
-  setSearchLoading(true);
-  try {
-    const response = await fetch(`http://localhost:8080/api/movies/busca?termo=${encodeURIComponent(term)}`);
-    const data = await response.json();
+    const currentScroll = carousel.scrollLeft;
+    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
 
-    console.log('Resposta da API (pesquisa):', data); // Debug
-
-    // Primeiro tenta acessar 'Search' (conforme retornado pela API)
-    if (data.Search && Array.isArray(data.Search)) {
-      setSearchResults(data.Search);
-      setIsSearching(true);
-    } else if (data.procura && Array.isArray(data.procura)) {
-      // Fallback para 'procura'
-      setSearchResults(data.procura);
-      setIsSearching(true);
+    if (direction === 'left') {
+      return currentScroll > 0;
     } else {
-      console.warn('Estrutura de dados inesperada:', data);
+      return currentScroll < maxScroll;
+    }
+  };
+
+  // Função para buscar filmes similares via API
+  const fetchSimilarMovies = async (searchTerm) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8080/api/movies/busca?termo=${encodeURIComponent(searchTerm)}`);
+      const data = await response.json();
+
+      console.log('Resposta da API (similares):', data); // Debug
+
+      // Primeiro tenta acessar 'Search' (conforme retornado pela API)
+      if (data.Search && Array.isArray(data.Search)) {
+        setSimilarMovies(data.Search);
+      } else if (data.procura && Array.isArray(data.procura)) {
+        // Fallback para 'procura'
+        setSimilarMovies(data.procura);
+      } else {
+        console.warn('Estrutura de dados inesperada:', data);
+        setSimilarMovies([]);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar filmes similares:', error);
+      setSimilarMovies([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para pesquisar filmes
+  const searchMovies = async (term) => {
+    if (!term.trim()) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setSearchLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8080/api/movies/busca?termo=${encodeURIComponent(term)}`);
+      const data = await response.json();
+
+      console.log('Resposta da API (pesquisa):', data); // Debug
+
+      // Primeiro tenta acessar 'Search' (conforme retornado pela API)
+      if (data.Search && Array.isArray(data.Search)) {
+        setSearchResults(data.Search);
+        setIsSearching(true);
+      } else if (data.procura && Array.isArray(data.procura)) {
+        // Fallback para 'procura'
+        setSearchResults(data.procura);
+        setIsSearching(true);
+      } else {
+        console.warn('Estrutura de dados inesperada:', data);
+        setSearchResults([]);
+        setIsSearching(true);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar filmes:', error);
       setSearchResults([]);
       setIsSearching(true);
+    } finally {
+      setSearchLoading(false);
     }
-  } catch (error) {
-    console.error('Erro ao buscar filmes:', error);
-    setSearchResults([]);
-    setIsSearching(true);
-  } finally {
-    setSearchLoading(false);
-  }
-};
+  };
 
-  // Debounce para pesquisa
+  // Função para buscar usuários para adicionar como amigos via API
+  const searchFriends = async (term) => {
+    if (!term.trim()) {
+      setFriendSearchResults([]);
+      return;
+    }
+
+    setFriendSearchLoading(true);
+    try {
+      // Buscar usuários via API
+      const response = await fetch(`http://localhost:8080/api/users/buscar?termo=${encodeURIComponent(term)}`);
+
+      if (!response.ok) {
+        throw new Error('Erro ao buscar usuários');
+      }
+
+      const users = await response.json();
+      console.log('Usuários encontrados:', users);
+
+      // Filtrar o usuário atual da lista de resultados
+      const filteredUsers = users.filter(foundUser => foundUser.id !== user.id);
+
+      setFriendSearchResults(filteredUsers);
+    } catch (error) {
+      console.error('Erro ao buscar usuários:', error);
+      setFriendSearchResults([]);
+    } finally {
+      setFriendSearchLoading(false);
+    }
+  };
+
+  // Função para carregar solicitações pendentes
+  const loadPendingRequests = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/amizades/pendentes/${user.id}`);
+      if (response.ok) {
+        const requests = await response.json();
+        setPendingRequests(requests);
+        console.log('Solicitações pendentes carregadas:', requests);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar solicitações pendentes:', error);
+    }
+  };
+
+  // Função para carregar lista de amigos
+  const loadFriends = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/amizades/amigos/${user.id}`);
+      if (response.ok) {
+        const friendsList = await response.json();
+        setFriends(friendsList);
+        console.log('Lista de amigos carregada:', friendsList);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar lista de amigos:', error);
+    }
+  };
+
+  // Função para verificar se existe relacionamento entre dois usuários
+  const checkExistingRelationship = async (userId1, userId2) => {
+    try {
+      // Primeiro verifica se existe qualquer relacionamento
+      const response = await fetch(`http://localhost:8080/api/amizades/verificar?id1=${userId1}&id2=${userId2}`);
+
+      if (response.ok) {
+        const friendship = await response.json();
+        return friendship; // Retorna a amizade aceita se existir
+      } else if (response.status === 404) {
+        // Não existe amizade aceita, mas pode existir pendente
+        return null;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Erro ao verificar relacionamento:', error);
+      return null;
+    }
+  };
+
+  // Debounce para pesquisa de filmes
   useEffect(() => {
     const timer = setTimeout(() => {
       searchMovies(searchTerm);
@@ -371,38 +501,379 @@ const searchMovies = async (term) => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Função chamada quando clica em um filme específico
-  const handleMovieClick = (movie) => {
-    setSelectedMovie(movie);
-    // Para filmes da pesquisa, usa o título para buscar similares
-    const searchTermForSimilar = movie.searchTerm || movie.titulo || movie.Title || movie.title;
-    fetchSimilarMovies(searchTermForSimilar);
+  // Debounce para pesquisa de amigos
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchFriends(friendSearchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [friendSearchTerm]);
+
+  // Carregar dados iniciais quando o componente monta
+  useEffect(() => {
+    if (user && user.id) {
+      loadPendingRequests();
+      loadFriends();
+    }
+  }, [user]);
+
+  // Função para enviar solicitação de amizade via API
+  const sendFriendRequest = async (targetUserId) => {
+    try {
+      // Verificar se já existe uma amizade aceita
+      const existingFriendship = await checkExistingRelationship(user.id, targetUserId);
+
+      if (existingFriendship) {
+        alert('Vocês já são amigos!');
+        return;
+      }
+
+      // Verificar se já existe uma solicitação pendente
+      const hasPendingRequest = pendingRequests.some(req =>
+        (req.solicitante.id === user.id && req.solicitado.id === targetUserId) ||
+        (req.solicitante.id === targetUserId && req.solicitado.id === user.id)
+      );
+
+      if (hasPendingRequest) {
+        alert('Já existe uma solicitação pendente entre vocês.');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8080/api/amizades/solicitar?solicitanteId=${user.id}&solicitadoId=${targetUserId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const newRequest = await response.json();
+        console.log('Solicitação de amizade enviada:', newRequest);
+
+        // Adicionar à lista de solicitações enviadas para feedback visual
+        setSentRequests(prev => [...prev, targetUserId]);
+
+        // Recarregar solicitações pendentes
+        loadPendingRequests();
+
+        alert('Solicitação de amizade enviada com sucesso!');
+      } else {
+        const errorText = await response.text();
+        console.error('Erro ao enviar solicitação:', errorText);
+
+        // Tratar erros específicos do serviço
+        if (errorText.includes('Já existe uma relação')) {
+          alert('Já existe uma relação entre vocês.');
+        } else if (errorText.includes('não é possível enviar solicitação para si mesmo')) {
+          alert('Não é possível enviar solicitação para si mesmo.');
+        } else {
+          alert('Erro ao enviar solicitação de amizade. Tente novamente.');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao enviar solicitação de amizade:', error);
+      alert('Erro ao enviar solicitação de amizade. Verifique sua conexão.');
+    }
   };
 
-  // Função para voltar ao catálogo principal
-  const handleBackToCatalog = () => {
-    setSelectedMovie(null);
-    setSimilarMovies([]);
+  // Função para responder a uma solicitação de amizade
+  const respondToFriendRequest = async (requestId, accept) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/amizades/${requestId}/responder?aceitar=${accept}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        console.log(`Solicitação ${accept ? 'aceita' : 'rejeitada'}`);
+
+        // Recarregar listas
+        loadPendingRequests();
+        loadFriends();
+
+        alert(`Solicitação ${accept ? 'aceita' : 'rejeitada'} com sucesso!`);
+      } else {
+        const errorText = await response.text();
+        console.error('Erro ao responder solicitação:', errorText);
+
+        if (errorText.includes('já foi respondida')) {
+          alert('Esta solicitação já foi respondida.');
+        } else {
+          alert('Erro ao responder solicitação. Tente novamente.');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao responder solicitação:', error);
+      alert('Erro ao responder solicitação. Verifique sua conexão.');
+    }
   };
 
-  // Função para limpar pesquisa
-  const handleClearSearch = () => {
-    setSearchTerm('');
-    setSearchResults([]);
-    setIsSearching(false);
+  // Função para remover amizade
+  const removeFriend = async (friendshipId) => {
+    if (!confirm('Tem certeza que deseja remover esta amizade?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/amizades/${friendshipId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        console.log('Amizade removida');
+
+        // Recarregar lista de amigos
+        loadFriends();
+
+        alert('Amizade removida com sucesso!');
+      } else {
+        const errorText = await response.text();
+        console.error('Erro ao remover amizade:', errorText);
+        alert('Erro ao remover amizade. Tente novamente.');
+      }
+    } catch (error) {
+      console.error('Erro ao remover amizade:', error);
+      alert('Erro ao remover amizade. Verifique sua conexão.');
+    }
   };
 
-  // Função para obter propriedades do filme (compatibilidade entre DTOs e dados locais)
-  const getMovieProps = (movie) => {
-    return {
-      title: movie.title || movie.titulo || movie.Title,
-      year: movie.year || movie.ano || movie.Year,
-      poster: movie.poster || movie.Poster,
-      description: movie.description || movie.plot || movie.Plot,
-      imdbId: movie.imdbId || movie.imdbID,
-      type: movie.tipo || movie.Type
-    };
-  };
+  // Função para alternar a barra lateral de amizades
+      const toggleFriendsSidebar = () => {
+        setIsFriendsSidebarOpen(!isFriendsSidebarOpen);
+
+        // Recarregar dados quando abrir a barra lateral
+        if (!isFriendsSidebarOpen && user && user.id) {
+          loadPendingRequests();
+          loadFriends();
+        }
+      };
+
+      // Função para obter avatar baseado no nome do usuário
+      const getUserAvatar = (userName) => {
+        const avatars = ['👤', '👩', '👨', '👩‍💼', '👨‍💻', '👩‍🎨', '👨‍🔬', '👩‍🏫', '👨‍⚕️', '👩‍⚕️'];
+        const index = userName ? userName.length % avatars.length : 0;
+        return avatars[index];
+      };
+
+      // Função para verificar se uma solicitação já foi enviada
+      const isRequestSent = (targetUserId) => {
+        return sentRequests.includes(targetUserId);
+      };
+
+      // Função para verificar se existe solicitação pendente
+      const hasPendingRequest = (targetUserId) => {
+        return pendingRequests.some(req =>
+          (req.solicitante.id === user.id && req.solicitado.id === targetUserId) ||
+          (req.solicitante.id === targetUserId && req.solicitado.id === user.id)
+        );
+      };
+
+      // Função para verificar se são amigos
+      const areFriends = (targetUserId) => {
+        return friends.some(friend =>
+          (friend.solicitante.id === targetUserId && friend.solicitado.id === user.id) ||
+          (friend.solicitante.id === user.id && friend.solicitado.id === targetUserId)
+        );
+      };
+
+      // Função para obter o status do botão de amizade
+      const getFriendButtonStatus = (targetUserId) => {
+        if (isRequestSent(targetUserId)) {
+          return { text: '✓ Enviado', disabled: true, className: 'sent' };
+        }
+
+        if (hasPendingRequest(targetUserId)) {
+          return { text: '⏳ Pendente', disabled: true, className: 'pending' };
+        }
+
+        if (areFriends(targetUserId)) {
+          return { text: '✓ Amigos', disabled: true, className: 'friends' };
+        }
+
+        return { text: '+ Adicionar', disabled: false, className: '' };
+      };
+
+      // Função para obter o nome do amigo
+      const getFriendName = (friendship) => {
+        if (friendship.solicitante.id === user.id) {
+          return friendship.solicitado.name;
+        } else {
+          return friendship.solicitante.name;
+        }
+      };
+
+      // Função para obter o username do amigo
+      const getFriendUsername = (friendship) => {
+        if (friendship.solicitante.id === user.id) {
+          return friendship.solicitado.username || friendship.solicitado.email;
+        } else {
+          return friendship.solicitante.username || friendship.solicitante.email;
+        }
+      };
+
+      // Função chamada quando clica em um filme específico
+      const handleMovieClick = (movie) => {
+        setSelectedMovie(movie);
+        // Para filmes da pesquisa, usa o título para buscar similares
+        const searchTermForSimilar = movie.searchTerm || movie.titulo || movie.Title || movie.title;
+        fetchSimilarMovies(searchTermForSimilar);
+      };
+
+      // Função para voltar ao catálogo principal
+      const handleBackToCatalog = () => {
+        setSelectedMovie(null);
+        setSimilarMovies([]);
+      };
+
+      // Função para limpar pesquisa
+      const handleClearSearch = () => {
+        setSearchTerm('');
+        setSearchResults([]);
+        setIsSearching(false);
+      };
+
+      // Função para obter propriedades do filme (compatibilidade entre DTOs e dados locais)
+      const getMovieProps = (movie) => {
+        return {
+          title: movie.title || movie.titulo || movie.Title,
+          year: movie.year || movie.ano || movie.Year,
+          poster: movie.poster || movie.Poster,
+          description: movie.description || movie.plot || movie.Plot,
+          imdbId: movie.imdbId || movie.imdbID,
+          type: movie.tipo || movie.Type
+        };
+      };
+
+      // Função para renderizar o conteúdo da aba ativa
+      const renderTabContent = () => {
+        switch (activeTab) {
+          case 'search':
+            return (
+              <>
+                <div className="friends-search-container">
+                  <div className="friends-search-input-wrapper">
+                    <input
+                      type="text"
+                      placeholder="Buscar usuários..."
+                      value={friendSearchTerm}
+                      onChange={(e) => setFriendSearchTerm(e.target.value)}
+                      className="friends-search-input"
+                    />
+                    <div className="friends-search-icon">
+                      {friendSearchLoading ? '⏳' : '🔍'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="friends-search-results">
+                  {friendSearchResults.length > 0 ? (
+                    friendSearchResults.map(foundUser => {
+                      const buttonStatus = getFriendButtonStatus(foundUser.id);
+                      return (
+                        <div key={foundUser.id} className="friend-result-item">
+                          <div className="friend-avatar">{getUserAvatar(foundUser.name)}</div>
+                          <div className="friend-info">
+                            <div className="friend-name">{foundUser.name}</div>
+                            <div className="friend-username">@{foundUser.username || foundUser.email}</div>
+                          </div>
+                          <button
+                            onClick={() => sendFriendRequest(foundUser.id)}
+                            disabled={buttonStatus.disabled}
+                            className={`add-friend-btn ${buttonStatus.className}`}
+                          >
+                            {buttonStatus.text}
+                          </button>
+                        </div>
+                      );
+                    })
+                  ) : friendSearchTerm ? (
+                    <div className="no-friends-found">
+                      <p>Nenhum usuário encontrado</p>
+                    </div>
+                  ) : (
+                    <div className="friends-placeholder">
+                      <p>Digite para buscar usuários</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            );
+
+          case 'requests':
+            return (
+              <div className="friends-search-results">
+                {pendingRequests.length > 0 ? (
+                  pendingRequests.map(request => (
+                    <div key={request.id} className="friend-result-item">
+                      <div className="friend-avatar">{getUserAvatar(request.solicitante.name)}</div>
+                      <div className="friend-info">
+                        <div className="friend-name">{request.solicitante.name}</div>
+                        <div className="friend-username">@{request.solicitante.username || request.solicitante.email}</div>
+                        <div className="request-date">
+                          {new Date(request.dataCriacao).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div className="request-actions">
+                        <button
+                          onClick={() => respondToFriendRequest(request.id, true)}
+                          className="accept-btn"
+                        >
+                          ✓ Aceitar
+                        </button>
+                        <button
+                          onClick={() => respondToFriendRequest(request.id, false)}
+                          className="reject-btn"
+                        >
+                          ✕ Rejeitar
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="friends-placeholder">
+                    <p>Nenhuma solicitação pendente</p>
+                  </div>
+                )}
+              </div>
+            );
+
+          case 'friends':
+            return (
+              <div className="friends-search-results">
+                {friends.length > 0 ? (
+                  friends.map(friendship => (
+                    <div key={friendship.id} className="friend-result-item">
+                      <div className="friend-avatar">{getUserAvatar(getFriendName(friendship))}</div>
+                      <div className="friend-info">
+                        <div className="friend-name">{getFriendName(friendship)}</div>
+                        <div className="friend-username">@{getFriendUsername(friendship)}</div>
+                        <div className="friendship-date">
+                          Amigos desde {new Date(friendship.dataCriacao).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removeFriend(friendship.id)}
+                        className="remove-friend-btn"
+                      >
+                        ✕ Remover
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="friends-placeholder">
+                    <p>Você ainda não tem amigos</p>
+                  </div>
+                )}
+              </div>
+            );
+
+          default:
+            return null;
+        }
+      };
 
   // Se um filme foi selecionado, mostra a página de detalhes
   if (selectedMovie) {
@@ -413,9 +884,23 @@ const searchMovies = async (term) => {
         {/* Header - Página de detalhes do filme */}
         <header className="catalog-header">
           <div className="header-content">
-            {/* Logo - à esquerda */}
-            <div className="logo">
-              <h1>🎬 CineCatalog</h1>
+            {/* Menu do usuário - MOVIDO PARA A ESQUERDA */}
+            <div className="user-menu">
+              <button
+                className="menu-icon-btn"
+                onClick={toggleFriendsSidebar}
+                title="Amigos"
+              >
+                <div className="menu-icon">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                {pendingRequests.length > 0 && (
+                  <span className="notification-badge">{pendingRequests.length}</span>
+                )}
+              </button>
+              <span className="user-welcome">Olá, {user.name}!</span>
             </div>
 
             {/* Botão de voltar */}
@@ -423,13 +908,11 @@ const searchMovies = async (term) => {
               ← Voltar ao Catálogo
             </button>
 
-            {/* Menu do usuário */}
-            <div className="user-menu">
-              <span className="user-welcome">Olá, {user.name}!</span>
-              <button onClick={onLogout} className="logout-btn">
-                Sair
-              </button>
-            </div>
+
+            {/* Botão de logout - extrema direita */}
+            <button onClick={onLogout} className="logout-btn">
+              Sair
+            </button>
           </div>
         </header>
 
@@ -497,6 +980,45 @@ const searchMovies = async (term) => {
             </div>
           )}
         </section>
+
+        {/* Barra Lateral de Amizades */}
+        <div className={`friends-sidebar ${isFriendsSidebarOpen ? 'open' : ''}`}>
+          <div className="friends-sidebar-header">
+            <h3>👥 Gerenciar Amigos</h3>
+            <button onClick={toggleFriendsSidebar} className="close-sidebar-btn">
+              ✕
+            </button>
+          </div>
+
+          {/* Abas para alternar entre buscar usuários e gerenciar amizades */}
+          <div className="friends-tabs">
+            <button
+              className={`tab-btn ${activeTab === 'search' ? 'active' : ''}`}
+              onClick={() => setActiveTab('search')}
+            >
+              Buscar
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'requests' ? 'active' : ''}`}
+              onClick={() => setActiveTab('requests')}
+            >
+              Solicitações ({pendingRequests.length})
+            </button>
+            <button
+              className={`tab-btn ${activeTab === 'friends' ? 'active' : ''}`}
+              onClick={() => setActiveTab('friends')}
+            >
+              Amigos ({friends.length})
+            </button>
+          </div>
+
+          {renderTabContent()}
+        </div>
+
+        {/* Overlay para fechar a barra lateral */}
+        {isFriendsSidebarOpen && (
+          <div className="sidebar-overlay" onClick={toggleFriendsSidebar}></div>
+        )}
       </div>
     );
   }
@@ -507,9 +1029,23 @@ const searchMovies = async (term) => {
       {/* Header - Página principal */}
       <header className="catalog-header">
         <div className="header-content">
-          {/* Logo - à esquerda */}
-          <div className="logo">
-            <h1>🎬 CineCatalog</h1>
+          {/* Menu do usuário - MOVIDO PARA A ESQUERDA */}
+          <div className="user-menu">
+            <button
+              className="menu-icon-btn"
+              onClick={toggleFriendsSidebar}
+              title="Amigos"
+            >
+              <div className="menu-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              {pendingRequests.length > 0 && (
+                <span className="notification-badge">{pendingRequests.length}</span>
+              )}
+            </button>
+            <span className="user-welcome">Olá, {user.name}!</span>
           </div>
 
           {/* Barra de Pesquisa - centralizada absolutamente */}
@@ -542,13 +1078,11 @@ const searchMovies = async (term) => {
             </div>
           </div>
 
-          {/* Menu do usuário - à direita */}
-          <div className="user-menu">
-            <span className="user-welcome">Olá, {user.name}!</span>
-            <button onClick={onLogout} className="logout-btn">
-              Sair
-            </button>
-          </div>
+
+          {/* Botão de logout - extrema direita */}
+          <button onClick={onLogout} className="logout-btn">
+            Sair
+          </button>
         </div>
       </header>
 
@@ -609,13 +1143,27 @@ const searchMovies = async (term) => {
             )}
           </section>
         ) : (
-          // Categorias temáticas
+          // Categorias temáticas COM SETAS
           movieCategories.map(category => (
             <section key={category.id} className="category-section">
               <h2 className="category-title">{category.name}</h2>
 
               <div className="movies-carousel">
-                <div className="movies-row">
+                {/* Seta esquerda */}
+                <button
+                  className="carousel-arrow left"
+                  onClick={() => scrollCarousel(category.id, 'left')}
+                  disabled={!canScroll(category.id, 'left')}
+                  aria-label="Rolar para a esquerda"
+                >
+                  ‹
+                </button>
+
+                {/* Container dos filmes */}
+                <div
+                  className="movies-row"
+                  ref={el => carouselRefs.current[category.id] = el}
+                >
                   {category.movies.map(movie => (
                     <div
                       key={movie.id}
@@ -635,13 +1183,63 @@ const searchMovies = async (term) => {
                     </div>
                   ))}
                 </div>
+
+                {/* Seta direita */}
+                <button
+                  className="carousel-arrow right"
+                  onClick={() => scrollCarousel(category.id, 'right')}
+                  disabled={!canScroll(category.id, 'right')}
+                  aria-label="Rolar para a direita"
+                >
+                  ›
+                </button>
               </div>
             </section>
           ))
         )}
       </main>
+
+      {/* Barra Lateral de Amizades */}
+      <div className={`friends-sidebar ${isFriendsSidebarOpen ? 'open' : ''}`}>
+        <div className="friends-sidebar-header">
+          <h3>👥 Gerenciar Amigos</h3>
+          <button onClick={toggleFriendsSidebar} className="close-sidebar-btn">
+            ✕
+          </button>
+        </div>
+
+        {/* Abas para alternar entre buscar usuários e gerenciar amizades */}
+        <div className="friends-tabs">
+          <button
+            className={`tab-btn ${activeTab === 'search' ? 'active' : ''}`}
+            onClick={() => setActiveTab('search')}
+          >
+            Buscar
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'requests' ? 'active' : ''}`}
+            onClick={() => setActiveTab('requests')}
+          >
+            Solicitações ({pendingRequests.length})
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'friends' ? 'active' : ''}`}
+            onClick={() => setActiveTab('friends')}
+          >
+            Amigos ({friends.length})
+          </button>
+        </div>
+
+        {renderTabContent()}
+      </div>
+
+      {/* Overlay para fechar a barra lateral */}
+      {isFriendsSidebarOpen && (
+        <div className="sidebar-overlay" onClick={toggleFriendsSidebar}></div>
+      )}
     </div>
   );
 };
 
 export default MovieCatalog;
+
