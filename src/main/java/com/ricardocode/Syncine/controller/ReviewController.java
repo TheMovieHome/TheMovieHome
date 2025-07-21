@@ -11,6 +11,7 @@ import java.util.List;
 
 
 @RequestMapping("/api/reviews")
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 public class ReviewController {
 

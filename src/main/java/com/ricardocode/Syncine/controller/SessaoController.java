@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/sessoes")
+@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class SessaoController {
 

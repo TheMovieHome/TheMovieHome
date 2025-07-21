@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Set;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/ListaDeDesejo")
 public class ListaDeDesejoController {
 
