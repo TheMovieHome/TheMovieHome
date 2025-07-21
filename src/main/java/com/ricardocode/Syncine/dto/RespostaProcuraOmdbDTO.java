@@ -14,3 +14,9 @@ public record RespostaProcuraOmdbDTO(
         @JsonProperty("totalResults") String totalResultado,
         @JsonProperty("Response") String resposta
 ){}
+
+
+
+
+
+
