@@ -138,8 +138,7 @@ A API segue os padrões RESTful. Aqui estão alguns dos endpoints principais:
 
 ## 👥 Autores
 
--   Ricardo Fragoso
--   [Nome do Colega 1]
--   [Nome do Colega 2]
+-   Ricardo Fragoso - https://github.com/TheCardo
+-   Arthur Vieira - https://github.com/arthurpip
+-   Caio César - https://github.com/CaioCesar2005
 
-*(Sinta-se à vontade para adicionar links para o GitHub ou LinkedIn de vocês aqui)*
