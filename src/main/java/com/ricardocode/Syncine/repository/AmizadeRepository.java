@@ -24,12 +24,12 @@ public interface AmizadeRepository extends JpaRepository<Amizade, Long> {
     // Busca pedidos pendentes recebidos por um usuário
     List<Amizade> findBySolicitadoIdAndStatus(Long idSolicitado, StatusPedido status);
 
-    // Busca amizade 
+    // Busca amizade aceita entre dois usuários
     @Query("""
         SELECT a FROM Amizade a
         WHERE ((a.solicitante.id = :id1 AND a.solicitado.id = :id2)
             OR (a.solicitante.id = :id2 AND a.solicitado.id = :id1))
-          AND a.status = 'ACEITA'
+          AND a.status = 'ACEITO'
     """)
     Optional<Amizade> findAmizadeAceitaEntreUsuarios(@Param("id1") Long idUsuario1, @Param("id2") Long idUsuario2);
 
@@ -37,7 +37,7 @@ public interface AmizadeRepository extends JpaRepository<Amizade, Long> {
     @Query("""
         SELECT a FROM Amizade a
         WHERE (a.solicitante.id = :id OR a.solicitado.id = :id)
-          AND a.status = 'ACEITA'
+          AND a.status = 'ACEITO'
     """)
     List<Amizade> listarAmigos(@Param("id") Long idUsuario);
 }

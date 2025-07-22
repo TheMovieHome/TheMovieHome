@@ -64,7 +64,7 @@ public class UserController {
 
     // Buscar usuário pelo nome (
     @GetMapping("/nome/{nome}")
-    public ResponseEntity<Usuario> getUserByName(@RequestParam String nome) {
+    public ResponseEntity<Usuario> getUserByName(@PathVariable String nome) {
         try {
             Usuario user = usuarioService.buscarUsuarioNome(nome);
             return ResponseEntity.ok(user);

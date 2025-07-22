@@ -1,4 +1,4 @@
-/* Catalog.css */
+/* Catalog.css - Versão com Reviews */
 
 .catalog-container {
   min-height: 100vh;
@@ -183,7 +183,7 @@
   align-items: center;
   gap: 1rem;
   flex: 0 0 auto;
-  margin-right: auto; /* Mudança: de margin-left: auto para margin-right: auto */
+  margin-right: auto;
 }
 
 .user-welcome {
@@ -239,28 +239,6 @@
   transform: scaleX(1.1);
 }
 
-/* Friends Button */
-.friends-btn {
-  padding: 0.5rem 1rem;
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  position: relative;
-}
-
-.friends-btn:hover {
-  background-color: #2563eb;
-  transform: scale(1.05);
-}
-
 /* Notification Badge */
 .notification-badge {
   position: absolute;
@@ -299,20 +277,20 @@
 .friends-sidebar {
   position: fixed;
   top: 0;
-  left: -400px; /* Mudança: de right: -400px para left: -400px */
+  left: -400px;
   width: 400px;
   height: 100vh;
   background-color: #1a1a1a;
-  border-right: 2px solid #2d2d2d; /* Mudança: de border-left para border-right */
+  border-right: 2px solid #2d2d2d;
   z-index: 1000;
-  transition: left 0.3s ease; /* Mudança: de right para left */
+  transition: left 0.3s ease;
   display: flex;
   flex-direction: column;
-  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3); /* Mudança: de -5px para 5px */
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
 }
 
 .friends-sidebar.open {
-  left: 0; /* Mudança: de right: 0 para left: 0 */
+  left: 0;
 }
 
 .friends-sidebar-header {
@@ -683,7 +661,7 @@
 /* Movies Carousel - SETAS MELHORADAS E CENTRALIZADAS */
 .movies-carousel {
   position: relative;
-  padding: 0 4rem; /* Mais espaço para as setas */
+  padding: 0 4rem;
 }
 
 .movies-row {
@@ -692,23 +670,22 @@
   overflow-x: auto;
   padding: 1rem 0.5rem;
   scroll-behavior: smooth;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .movies-row::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
+  display: none;
 }
 
 /* Setas de navegação do carrossel - MELHORADAS */
 .carousel-arrow {
   position: absolute;
-  /* CENTRALIZADA NA ALTURA DA IMAGEM DO FILME */
-  top: calc(50% - 50px); /* Ajusta para centralizar na altura da imagem (280px/2 - 50px do botão/2) */
+  top: calc(50% - 50px);
   background: linear-gradient(135deg, rgba(74, 222, 128, 0.95), rgba(34, 197, 94, 0.95));
   color: #000;
   border: none;
-  border-radius: 12px; /* Bordas mais arredondadas */
+  border-radius: 12px;
   width: 48px;
   height: 48px;
   display: flex;
@@ -762,12 +739,12 @@
 /* Ícones das setas melhorados */
 .carousel-arrow.left::before {
   content: '‹';
-  margin-right: 2px; /* Pequeno ajuste visual */
+  margin-right: 2px;
 }
 
 .carousel-arrow.right::before {
   content: '›';
-  margin-left: 2px; /* Pequeno ajuste visual */
+  margin-left: 2px;
 }
 
 /* Movie Cards */
@@ -799,7 +776,7 @@
 }
 
 .carousel-card .movie-poster {
-  height: 280px; /* Altura da imagem para centralizar as setas */
+  height: 280px;
 }
 
 .movie-poster img {
@@ -946,6 +923,401 @@
   font-size: 1.1rem;
   line-height: 1.6;
   color: #d1d5db;
+  margin-bottom: 2rem;
+}
+
+/* Movie Actions */
+.movie-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.review-btn {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  color: black;
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
+}
+
+.review-btn:hover {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4);
+}
+
+/* Reviews Section */
+.movie-reviews-section {
+  padding: 2rem 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.movie-reviews-section h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #4ade80;
+  padding-left: 1.5rem;
+  border-left: 4px solid #4ade80;
+}
+
+.reviews-container {
+  width: 100%;
+  margin: 0;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-sizing: border-box;
+}
+
+.review-item {
+  background-color: #1a1a1a;
+  border: 2px solid #2d2d2d;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.review-item:hover {
+  border-color: #4ade80;
+  box-shadow: 0 4px 15px rgba(74, 222, 128, 0.1);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.review-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.review-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #4ade80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.review-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.review-username {
+  font-weight: 600;
+  color: white;
+  font-size: 0.875rem;
+}
+
+.review-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stars-container {
+  display: flex;
+  gap: 0.1rem;
+}
+
+.star {
+  font-size: 0.875rem;
+  color: #374151;
+  transition: all 0.2s ease;
+}
+
+.star.filled {
+  color: #fbbf24;
+}
+
+.star.interactive {
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.star.interactive:hover {
+  transform: scale(1.1);
+}
+
+.rating-text {
+  color: #9ca3af;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.review-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-review-btn, .delete-review-btn {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.edit-review-btn {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.edit-review-btn:hover {
+  background-color: #2563eb;
+  transform: scale(1.05);
+}
+
+.delete-review-btn {
+  background-color: #dc2626;
+  color: white;
+}
+
+.delete-review-btn:hover {
+  background-color: #b91c1c;
+  transform: scale(1.05);
+}
+
+.review-comment {
+  color: #d1d5db;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.no-reviews {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 1rem;
+  padding: 2rem;
+}
+
+/* Review Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.review-modal {
+  background-color: #1a1a1a;
+  border: 2px solid #2d2d2d;
+  border-radius: 1rem;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 2px solid #2d2d2d;
+  background-color: #2d2d2d;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #4ade80;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.close-modal-btn:hover {
+  color: #dc2626;
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+.modal-content {
+  padding: 1.5rem;
+}
+
+.movie-info-modal {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #2d2d2d;
+  border-radius: 0.5rem;
+}
+
+.movie-info-modal h4 {
+  margin: 0;
+  color: #4ade80;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.rating-section {
+  margin-bottom: 1.5rem;
+}
+
+.rating-section label {
+  display: block;
+  color: #d1d5db;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.comment-section {
+  margin-bottom: 1.5rem;
+}
+
+.comment-section label {
+  display: block;
+  color: #d1d5db;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.review-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #2d2d2d;
+  border: 2px solid #374151;
+  border-radius: 0.5rem;
+  color: white;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 120px;
+  outline: none;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.review-textarea:focus {
+  border-color: #4ade80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.1);
+}
+
+.review-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.cancel-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+  background-color: #4b5563;
+  transform: scale(1.05);
+}
+
+.submit-btn {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  color: black;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
+}
+
+.submit-btn:hover {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4);
+}
+
+/* User Reviews in Sidebar */
+.reviews-header {
+  padding: 1rem 0;
+  border-bottom: 1px solid #2d2d2d;
+  margin-bottom: 1rem;
+}
+
+.reviews-header h4 {
+  margin: 0;
+  color: #4ade80;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.user-review-item {
+  background-color: #2d2d2d;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.user-review-item:hover {
+  border-color: #4ade80;
+  background-color: #374151;
+}
+
+.review-movie-info {
+  flex: 1;
+}
+
+.review-movie-title {
+  font-weight: 600;
+  color: white;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
 }
 
 /* Similar Movies Section */
@@ -1007,19 +1379,23 @@
 
   .friends-sidebar {
     width: 350px;
-    left: -350px; /* Mudança: de right: -350px para left: -350px */
+    left: -350px;
   }
 
-  /* Setas responsivas */
   .carousel-arrow {
     width: 44px;
     height: 44px;
     font-size: 1.3rem;
-    top: calc(50% - 45px); /* Ajuste para tablet */
+    top: calc(50% - 45px);
   }
 
   .movies-carousel {
     padding: 0 3rem;
+  }
+
+  .review-modal {
+    width: 95%;
+    max-width: 500px;
   }
 }
 
@@ -1041,7 +1417,7 @@
   }
 
   .user-welcome {
-    display: none; /* Oculta texto de boas-vindas em telas pequenas */
+    display: none;
   }
 
   .category-section {
@@ -1076,12 +1452,7 @@
 
   .friends-sidebar {
     width: 300px;
-    left: -300px; /* Mudança: de right: -300px para left: -300px */
-  }
-
-  .friends-btn {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.75rem;
+    left: -300px;
   }
 
   .tab-btn {
@@ -1099,7 +1470,6 @@
     font-size: 0.65rem;
   }
 
-  /* Menu Icon Button - Responsivo */
   .menu-icon-btn {
     padding: 0.4rem;
     width: 40px;
@@ -1116,20 +1486,37 @@
     height: 2.5px;
   }
 
-  /* Setas responsivas mobile */
   .carousel-card .movie-poster {
-    height: 200px; /* Altura menor no mobile */
+    height: 200px;
   }
 
   .carousel-arrow {
     width: 40px;
     height: 40px;
     font-size: 1.2rem;
-    top: calc(50% - 35px); /* Ajuste para mobile */
+    top: calc(50% - 35px);
   }
 
   .movies-carousel {
     padding: 0 2.5rem;
+  }
+
+  .review-modal {
+    width: 95%;
+    margin: 1rem;
+  }
+
+  .modal-content {
+    padding: 1rem;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .cancel-btn, .submit-btn {
+    width: 100%;
   }
 }
 
@@ -1165,7 +1552,7 @@
   }
 
   .carousel-card .movie-poster {
-    height: 180px; /* Altura ainda menor para mobile pequeno */
+    height: 180px;
   }
 
   .category-title {
@@ -1179,7 +1566,7 @@
 
   .friends-sidebar {
     width: 280px;
-    left: -280px; /* Mudança: de right: -280px para left: -280px */
+    left: -280px;
   }
 
   .friend-result-item {
@@ -1220,7 +1607,6 @@
     font-size: 0.6rem;
   }
 
-  /* Menu Icon Button - Mobile */
   .menu-icon-btn {
     padding: 0.3rem;
     width: 36px;
@@ -1237,24 +1623,54 @@
     height: 2px;
   }
 
-  /* Setas responsivas mobile pequeno */
   .carousel-arrow {
     width: 36px;
     height: 36px;
     font-size: 1.1rem;
-    top: calc(50% - 30px); /* Ajuste para mobile pequeno */
+    top: calc(50% - 30px);
     border-radius: 10px;
   }
 
   .movies-carousel {
     padding: 0 2rem;
   }
+
+  .review-modal {
+    width: 95%;
+    margin: 0.5rem;
+  }
+
+  .modal-header {
+    padding: 1rem;
+  }
+
+  .modal-content {
+    padding: 1rem;
+  }
+
+  .review-textarea {
+    min-height: 100px;
+  }
+
+  .review-item {
+    padding: 1rem;
+  }
+
+  .review-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .review-actions {
+    align-self: flex-end;
+  }
 }
 
 /* Animações adicionais */
 @keyframes slideInLeft {
   from {
-    transform: translateX(-100%); /* Mudança: de translateX(100%) para translateX(-100%) */
+    transform: translateX(-100%);
     opacity: 0;
   }
   to {
@@ -1282,7 +1698,7 @@
 }
 
 .friends-sidebar.open {
-  animation: slideInLeft 0.3s ease; /* Mudança: de slideInRight para slideInLeft */
+  animation: slideInLeft 0.3s ease;
 }
 
 .sidebar-overlay {
@@ -1295,6 +1711,14 @@
 
 .notification-badge {
   animation: pulse 2s infinite;
+}
+
+.review-modal {
+  animation: fadeIn 0.3s ease;
+}
+
+.review-item {
+  animation: fadeIn 0.5s ease;
 }
 
 /* Estados de carregamento */
