@@ -56,7 +56,15 @@ public class AmizadeService {
             throw new IllegalStateException("Solicitação já foi respondida.");
         }
 
+        // Apenas atualiza o status. A lógica de listagem já trata a relação como amizade.
         amizade.setStatus(aceitar ? StatusPedido.ACEITO : StatusPedido.RECUSADO);
+
+        // Se a solicitação for recusada, ela será excluída do banco de dados.
+        if (!aceitar) {
+            amizadeRepository.delete(amizade);
+            return null; // Retorna null para indicar que foi removido
+        }
+
         return amizadeRepository.save(amizade);
     }
 
