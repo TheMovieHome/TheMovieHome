@@ -1,0 +1,498 @@
+/* VideoPlayer.css - CORRIGIDO PARA VÍDEO EM TAMANHO ADEQUADO, ÍCONES MAIORES E BOTÃO PLAY COM CORES DO REVIEW */
+
+.video-player-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.95);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+}
+
+.video-player {
+  position: relative;
+  width: 90%;
+  height: 90%;
+  max-width: 1200px;
+  max-height: 800px;
+  background-color: #000000;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+}
+
+.video-player.fullscreen {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  max-height: none;
+  border-radius: 0;
+}
+
+/* Header */
+.video-player-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.video-player-header.visible {
+  opacity: 1;
+}
+
+.video-info h3 {
+  color: white;
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* ÍCONE DE FECHAR - AUMENTADO */
+.close-player-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 56px;  /* AUMENTADO de 44px para 56px */
+  height: 56px; /* AUMENTADO de 44px para 56px */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.close-player-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+/* ÍCONE DENTRO DO BOTÃO DE FECHAR - AUMENTADO */
+.close-player-btn svg {
+  width: 32px !important;  /* AUMENTADO de 24px para 32px */
+  height: 32px !important; /* AUMENTADO de 24px para 32px */
+}
+
+/* Container do Vídeo - AJUSTADO PARA PREENCHER ADEQUADAMENTE */
+.video-container {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000000;
+  width: 100%;
+  height: 100%;
+}
+
+/* ELEMENTO DE VÍDEO */
+.video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.video-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: white;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #374151;
+  border-top: 4px solid #4ade80;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.video-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.video-placeholder p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.select-video-btn {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  color: black;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.select-video-btn:hover {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  transform: translateY(-1px);
+}
+
+/* Controles */
+.video-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+  padding: 1rem 1.5rem 1.5rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.video-controls.visible {
+  opacity: 1;
+}
+
+.progress-container {
+  margin-bottom: 1rem;
+}
+
+.progress-bar {
+  position: relative;
+  height: 8px; /* AUMENTADO de 6px para 8px */
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 4px; /* AUMENTADO de 3px para 4px */
+  cursor: pointer;
+  transition: height 0.2s ease;
+}
+
+.progress-bar:hover {
+  height: 10px; /* AUMENTADO de 8px para 10px */
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80, #22c55e);
+  border-radius: 4px; /* AUMENTADO de 3px para 4px */
+  transition: width 0.1s ease;
+}
+
+.progress-thumb {
+  position: absolute;
+  top: 50%;
+  width: 18px; /* AUMENTADO de 14px para 18px */
+  height: 18px; /* AUMENTADO de 14px para 18px */
+  background-color: #4ade80;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.progress-bar:hover .progress-thumb {
+  opacity: 1;
+}
+
+.controls-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.controls-left,
+.controls-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* AUMENTADO de 0.75rem para 1rem */
+}
+
+/* BOTÕES DE CONTROLE - AUMENTADOS */
+.control-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 52px;  /* AUMENTADO de 40px para 52px */
+  height: 52px; /* AUMENTADO de 40px para 52px */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+/* ÍCONES DENTRO DOS BOTÕES DE CONTROLE - AUMENTADOS */
+.control-btn svg {
+  width: 28px !important;  /* AUMENTADO de 20px para 28px */
+  height: 28px !important; /* AUMENTADO de 20px para 28px */
+}
+
+/* BOTÃO PLAY/PAUSE - MUDANÇA PRINCIPAL: CORES DO BOTÃO 'FAZER REVIEW' */
+.play-pause-btn {
+  /* NOVA COR: Mesmo gradiente verde do botão 'Fazer Review' */
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  border: none;
+  border-radius: 50%;
+  width: 64px;  /* AUMENTADO de 48px para 64px */
+  height: 64px; /* AUMENTADO de 48px para 64px */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  /* Sombra para dar mais destaque */
+  box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
+}
+
+.play-pause-btn:hover {
+  /* NOVA COR NO HOVER: Gradiente mais escuro, igual ao hover do 'Fazer Review' */
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  transform: scale(1.1);
+  /* Sombra mais intensa no hover */
+  box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4);
+}
+
+/* ÍCONE DENTRO DO BOTÃO PLAY/PAUSE - AUMENTADO E COR AJUSTADA */
+.play-pause-btn svg {
+  width: 36px !important;  /* AUMENTADO de 24px para 36px */
+  height: 36px !important; /* AUMENTADO de 24px para 36px */
+  /* COR DO ÍCONE: Preto para contrastar com o fundo verde */
+  color: #000000 !important;
+}
+
+.time-display {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: white;
+  font-size: 1.1rem; /* AUMENTADO de 0.9rem para 1.1rem */
+  font-weight: 500;
+  margin-left: 0.5rem;
+}
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* AUMENTADO de 0.5rem para 0.75rem */
+}
+
+/* ÍCONES DE VOLUME - AUMENTADOS */
+.volume-control .control-btn svg {
+  width: 28px !important;  /* AUMENTADO de 20px para 28px */
+  height: 28px !important; /* AUMENTADO de 20px para 28px */
+}
+
+.volume-slider {
+  width: 100px; /* AUMENTADO de 80px para 100px */
+  height: 6px;  /* AUMENTADO de 4px para 6px */
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px; /* AUMENTADO de 2px para 3px */
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px; /* AUMENTADO de 14px para 18px */
+  height: 18px; /* AUMENTADO de 14px para 18px */
+  background: #4ade80;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 18px; /* AUMENTADO de 14px para 18px */
+  height: 18px; /* AUMENTADO de 14px para 18px */
+  background: #4ade80;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsividade - AJUSTADA PARA ÍCONES MAIORES */
+@media (max-width: 768px) {
+  .video-player {
+    width: 95%;
+    height: 95%;
+  }
+
+  .video-player-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .video-info h3 {
+    font-size: 1rem;
+  }
+
+  .close-player-btn {
+    width: 48px;  /* AJUSTADO para mobile */
+    height: 48px; /* AJUSTADO para mobile */
+  }
+
+  .close-player-btn svg {
+    width: 28px !important;  /* AJUSTADO para mobile */
+    height: 28px !important; /* AJUSTADO para mobile */
+  }
+
+  .video-controls {
+    padding: 0.75rem 1rem 1rem;
+  }
+
+  .controls-main {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .controls-left,
+  .controls-right {
+    justify-content: center;
+  }
+
+  .volume-control {
+    order: -1;
+    justify-content: center;
+  }
+
+  .volume-slider {
+    width: 140px; /* AUMENTADO para mobile */
+  }
+
+  .time-display {
+    margin-left: 0;
+    justify-content: center;
+    font-size: 1rem; /* AJUSTADO para mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .video-player {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  .control-btn {
+    width: 44px;  /* AJUSTADO para mobile pequeno */
+    height: 44px; /* AJUSTADO para mobile pequeno */
+  }
+
+  .control-btn svg {
+    width: 24px !important;  /* AJUSTADO para mobile pequeno */
+    height: 24px !important; /* AJUSTADO para mobile pequeno */
+  }
+
+  .play-pause-btn {
+    width: 56px;  /* AJUSTADO para mobile pequeno */
+    height: 56px; /* AJUSTADO para mobile pequeno */
+  }
+
+  .play-pause-btn svg {
+    width: 32px !important;  /* AJUSTADO para mobile pequeno */
+    height: 32px !important; /* AJUSTADO para mobile pequeno */
+  }
+
+  .controls-left,
+  .controls-right {
+    gap: 0.75rem; /* AJUSTADO para mobile pequeno */
+  }
+
+  .time-display {
+    font-size: 0.9rem; /* AJUSTADO para mobile pequeno */
+  }
+
+  .close-player-btn {
+    width: 40px;  /* AJUSTADO para mobile pequeno */
+    height: 40px; /* AJUSTADO para mobile pequeno */
+  }
+
+  .close-player-btn svg {
+    width: 24px !important;  /* AJUSTADO para mobile pequeno */
+    height: 24px !important; /* AJUSTADO para mobile pequeno */
+  }
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.video-player {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Melhorias de acessibilidade - ATUALIZADO PARA NOVA COR */
+.control-btn:focus,
+.play-pause-btn:focus,
+.close-player-btn:focus {
+  outline: 2px solid #4ade80;
+  outline-offset: 2px;
+}
+
+/* Estados de loading */
+.video-loading p {
+  margin: 0;
+  font-size: 1rem;
+  color: #9ca3af;
+}
+
+/* Melhorias visuais */
+.video-player-overlay {
+  animation: fadeIn 0.3s ease;
+}
+
+.video-controls {
+  backdrop-filter: blur(10px);
+}
+
+.video-player-header {
+  backdrop-filter: blur(10px);
+}
+

@@ -1,5 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Catalog.css';
+import UserAvatar from './UserAvatar'; // Importando o novo componente
+import VideoPlayer from './VideoPlayer'; // Importando o VideoPlayer
+// Importando ícones do Lucide React
+import {
+  Menu,
+  Search,
+  X,
+  Star,
+  User,
+  Users,
+  UserPlus,
+  Check,
+  Clock,
+  Edit,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  ArrowLeft,
+  Loader,
+  Heart,
+  HeartOff,
+  BookmarkPlus
+} from 'lucide-react';
 
 const MovieCatalog = ({ user, onLogout }) => {
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -20,10 +44,10 @@ const MovieCatalog = ({ user, onLogout }) => {
   const [friends, setFriends] = useState([]);
   const [activeTab, setActiveTab] = useState('search'); // 'search', 'requests', 'friends', 'reviews'
 
-  // Estados para reviews
+  // Estados para reviews - MODIFICADO PARA ARMAZENAMENTO LOCAL
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [movieReviews, setMovieReviews] = useState([]);
-  const [userReviews, setUserReviews] = useState([]);
+  const [movieReviews, setMovieReviews] = useState([]); // Apenas reviews do usuário logado para o filme atual
+  const [userReviews, setUserReviews] = useState([]); // Todos os reviews do usuário logado
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewForm, setReviewForm] = useState({
     classificacao: 5,
@@ -31,8 +55,336 @@ const MovieCatalog = ({ user, onLogout }) => {
   });
   const [editingReview, setEditingReview] = useState(null);
 
+  // Estados para o VideoPlayer
+  const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
+  const [currentMovieForPlayer, setCurrentMovieForPlayer] = useState(null);
+
+  // Estados para Lista de Desejos
+  const [wishlist, setWishlist] = useState([]);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [wishlistMovies, setWishlistMovies] = useState([]);
+
   // Refs para os carrosséis
   const carouselRefs = useRef({});
+
+  // FUNÇÕES DE LISTA DE DESEJOS
+
+  // Função para carregar lista de desejos do backend
+  const loadWishlist = async () => {
+    if (!user || !user.id) return;
+
+    setWishlistLoading(true);
+    try {
+      const response = await fetch('http://localhost:8080/api/ListaDeDesejo');
+      if (response.ok) {
+        const wishlistData = await response.json();
+        setWishlist(Array.isArray(wishlistData) ? wishlistData : []);
+        console.log('Lista de desejos carregada:', wishlistData);
+      } else {
+        console.error('Erro ao carregar lista de desejos:', response.status);
+        setWishlist([]);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar lista de desejos:', error);
+      setWishlist([]);
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
+  // Função para adicionar filme à lista de desejos
+  const addToWishlist = async (movie) => {
+    const movieProps = getMovieProps(movie);
+    const imdbId = movieProps.imdbId || movie.imdbID;
+
+    if (!imdbId) {
+      alert('ID do filme não encontrado.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:8080/api/ListaDeDesejo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imdbId: imdbId })
+      });
+
+      if (response.ok) {
+        setWishlist(prev => [...prev, imdbId]);
+        alert('Filme adicionado à lista de desejos!');
+        console.log('Filme adicionado à wishlist:', imdbId);
+        // Recarregar filmes da wishlist
+        loadWishlistMovies();
+      } else {
+        console.error('Erro ao adicionar à lista de desejos:', response.status);
+        alert('Erro ao adicionar filme à lista de desejos.');
+      }
+    } catch (error) {
+      console.error('Erro ao adicionar à lista de desejos:', error);
+      alert('Erro ao adicionar filme à lista de desejos.');
+    }
+  };
+
+  // Função para remover filme da lista de desejos
+  const removeFromWishlist = async (movie) => {
+    const movieProps = getMovieProps(movie);
+    const imdbId = movieProps.imdbId || movie.imdbID;
+
+    if (!imdbId) {
+      alert('ID do filme não encontrado.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:8080/api/ListaDeDesejo', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imdbId: imdbId })
+      });
+
+      if (response.ok || response.status === 204) {
+        setWishlist(prev => prev.filter(id => id !== imdbId));
+        alert('Filme removido da lista de desejos!');
+        console.log('Filme removido da wishlist:', imdbId);
+        // Recarregar filmes da wishlist
+        loadWishlistMovies();
+      } else {
+        console.error('Erro ao remover da lista de desejos:', response.status);
+        alert('Erro ao remover filme da lista de desejos.');
+      }
+    } catch (error) {
+      console.error('Erro ao remover da lista de desejos:', error);
+      alert('Erro ao remover filme da lista de desejos.');
+    }
+  };
+
+  // Função para verificar se um filme está na lista de desejos
+  const isInWishlist = (movie) => {
+    const movieProps = getMovieProps(movie);
+    const imdbId = movieProps.imdbId || movie.imdbID;
+    return wishlist.includes(imdbId);
+  };
+
+  // Função para alternar filme na lista de desejos
+  const toggleWishlist = async (movie) => {
+    if (isInWishlist(movie)) {
+      await removeFromWishlist(movie);
+    } else {
+      await addToWishlist(movie);
+    }
+  };
+
+  // Função para buscar detalhes dos filmes da wishlist
+  const loadWishlistMovies = async () => {
+    if (wishlist.length === 0) {
+      setWishlistMovies([]);
+      return;
+    }
+
+    const movies = [];
+
+    for (const imdbId of wishlist) {
+      try {
+        const response = await fetch(`http://localhost:8080/api/movies/busca?termo=${imdbId}`);
+        const data = await response.json();
+
+        if (data.Search && Array.isArray(data.Search) && data.Search.length > 0) {
+          const movie = data.Search.find(m => m.imdbID === imdbId);
+          if (movie) {
+            movies.push(movie);
+          }
+        } else if (data.procura && Array.isArray(data.procura) && data.procura.length > 0) {
+          const movie = data.procura.find(m => m.imdbID === imdbId);
+          if (movie) {
+            movies.push(movie);
+          }
+        }
+      } catch (error) {
+        console.error(`Erro ao buscar filme ${imdbId}:`, error);
+      }
+    }
+
+    setWishlistMovies(movies);
+  };
+
+  // FUNÇÕES DE ARMAZENAMENTO LOCAL PARA REVIEWS
+
+  // Função para obter chave do localStorage baseada no usuário
+  const getLocalStorageKey = () => {
+    return `movieReviews_${user.id}`;
+  };
+
+  // Função para carregar reviews do localStorage
+  const loadLocalReviews = () => {
+    try {
+      const key = getLocalStorageKey();
+      const storedReviews = localStorage.getItem(key);
+      return storedReviews ? JSON.parse(storedReviews) : [];
+    } catch (error) {
+      console.error('Erro ao carregar reviews do localStorage:', error);
+      return [];
+    }
+  };
+
+  // Função para salvar reviews no localStorage
+  const saveLocalReviews = (reviews) => {
+    try {
+      const key = getLocalStorageKey();
+      localStorage.setItem(key, JSON.stringify(reviews));
+    } catch (error) {
+      console.error('Erro ao salvar reviews no localStorage:', error);
+    }
+  };
+
+  // Função para gerar ID único para review
+  const generateReviewId = () => {
+    return `review_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  };
+
+  // Função para carregar reviews de um filme específico (apenas do usuário logado)
+  const loadMovieReviews = (imdbId) => {
+    if (!imdbId) return;
+
+    setReviewsLoading(true);
+    try {
+      const allUserReviews = loadLocalReviews();
+      const movieSpecificReviews = allUserReviews.filter(review => review.imdbId === imdbId);
+      setMovieReviews(movieSpecificReviews);
+      console.log('Reviews do filme carregados (local):', movieSpecificReviews);
+    } catch (error) {
+      console.error('Erro ao carregar reviews do filme:', error);
+      setMovieReviews([]);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  // Função para carregar todos os reviews do usuário
+  const loadUserReviews = () => {
+    if (!user || !user.id) return;
+
+    try {
+      const allUserReviews = loadLocalReviews();
+      setUserReviews(allUserReviews);
+      console.log('Reviews do usuário carregados (local):', allUserReviews);
+    } catch (error) {
+      console.error('Erro ao carregar reviews do usuário:', error);
+      setUserReviews([]);
+    }
+  };
+
+  // Função para criar ou atualizar review (armazenamento local)
+  const submitReview = () => {
+    if (!selectedMovie || !reviewForm.comentario.trim()) {
+      alert('Por favor, preencha o comentário do review.');
+      return;
+    }
+
+    const movieProps = getMovieProps(selectedMovie);
+    const imdbId = movieProps.imdbId || selectedMovie.imdbID;
+
+    if (!imdbId) {
+      alert('ID do filme não encontrado.');
+      return;
+    }
+
+    try {
+      const allUserReviews = loadLocalReviews();
+
+      if (editingReview) {
+        // Atualizar review existente
+        const updatedReviews = allUserReviews.map(review =>
+          review.id === editingReview.id
+            ? {
+                ...review,
+                classificacao: reviewForm.classificacao,
+                comentario: reviewForm.comentario.trim(),
+                dataAtualizacao: new Date().toISOString()
+              }
+            : review
+        );
+
+        saveLocalReviews(updatedReviews);
+        alert('Review atualizado com sucesso!');
+      } else {
+        // Criar novo review
+        const newReview = {
+          id: generateReviewId(),
+          imdbId: imdbId,
+          movieTitle: movieProps.title,
+          movieYear: movieProps.year,
+          moviePoster: movieProps.poster,
+          classificacao: reviewForm.classificacao,
+          comentario: reviewForm.comentario.trim(),
+          username: user.username || user.email,
+          userId: user.id,
+          dataCriacao: new Date().toISOString()
+        };
+
+        const updatedReviews = [...allUserReviews, newReview];
+        saveLocalReviews(updatedReviews);
+        alert('Review criado com sucesso!');
+      }
+
+      // Recarregar reviews
+      loadMovieReviews(imdbId);
+      loadUserReviews();
+
+      // Fechar modal e resetar form
+      setIsReviewModalOpen(false);
+      setReviewForm({ classificacao: 5, comentario: '' });
+      setEditingReview(null);
+
+    } catch (error) {
+      console.error('Erro ao salvar review:', error);
+      alert('Erro ao salvar review. Tente novamente.');
+    }
+  };
+
+  // Função para deletar review (armazenamento local)
+  const deleteReview = (reviewId) => {
+    if (!confirm('Tem certeza que deseja deletar este review?')) {
+      return;
+    }
+
+    try {
+      const allUserReviews = loadLocalReviews();
+      const updatedReviews = allUserReviews.filter(review => review.id !== reviewId);
+
+      saveLocalReviews(updatedReviews);
+      alert('Review deletado com sucesso!');
+
+      // Recarregar reviews
+      if (selectedMovie) {
+        const movieProps = getMovieProps(selectedMovie);
+        const imdbId = movieProps.imdbId || selectedMovie.imdbID;
+        loadMovieReviews(imdbId);
+      }
+      loadUserReviews();
+
+    } catch (error) {
+      console.error('Erro ao deletar review:', error);
+      alert('Erro ao deletar review. Tente novamente.');
+    }
+  };
+
+  // FUNÇÕES DO VIDEO PLAYER
+
+  // Função para abrir o video player
+  const openVideoPlayer = (movie) => {
+    setCurrentMovieForPlayer(movie);
+    setIsVideoPlayerOpen(true);
+  };
+
+  // Função para fechar o video player
+  const closeVideoPlayer = () => {
+    setIsVideoPlayerOpen(false);
+    setCurrentMovieForPlayer(null);
+  };
 
   // Categorias temáticas com filmes específicos (mantém as mesmas do código original)
   const movieCategories = [
@@ -354,149 +706,6 @@ const MovieCatalog = ({ user, onLogout }) => {
     }
   ];
 
-
-  // Função para carregar reviews de um filme
-  const loadMovieReviews = async (imdbId) => {
-    if (!imdbId) return;
-
-    setReviewsLoading(true);
-    try {
-      const response = await fetch(`http://localhost:8080/api/reviews/movie/${imdbId}`);
-      if (response.ok) {
-        const reviews = await response.json();
-        setMovieReviews(reviews);
-        console.log('Reviews do filme carregados:', reviews);
-      } else {
-        setMovieReviews([]);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar reviews do filme:', error);
-      setMovieReviews([]);
-    } finally {
-      setReviewsLoading(false);
-    }
-  };
-
-  // Função para carregar reviews do usuário
-  const loadUserReviews = async () => {
-    if (!user || !user.id) return;
-
-    try {
-      // Nota: Este endpoint precisa ser implementado no backend
-      // GET /api/reviews/usuario/{userId}
-      const response = await fetch(`http://localhost:8080/api/reviews/usuario/${user.id}`);
-      if (response.ok) {
-        const reviews = await response.json();
-        setUserReviews(reviews);
-        console.log('Reviews do usuário carregados:', reviews);
-      } else {
-        setUserReviews([]);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar reviews do usuário:', error);
-      setUserReviews([]);
-    }
-  };
-
-  // Função para criar ou atualizar review
-  const submitReview = async () => {
-    if (!selectedMovie || !reviewForm.comentario.trim()) {
-      alert('Por favor, preencha o comentário do review.');
-      return;
-    }
-
-    const movieProps = getMovieProps(selectedMovie);
-    const imdbId = movieProps.imdbId || selectedMovie.imdbID;
-
-    if (!imdbId) {
-      alert('ID do filme não encontrado.');
-      return;
-    }
-
-    const reviewData = {
-      imdbId: imdbId,
-      classificacao: reviewForm.classificacao,
-      comentario: reviewForm.comentario.trim()
-    };
-
-    try {
-      let response;
-
-      if (editingReview) {
-        // Atualizar review existente
-        response = await fetch(`http://localhost:8080/api/reviews/${editingReview.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(reviewData)
-        });
-      } else {
-        // Criar novo review
-        response = await fetch('http://localhost:8080/api/reviews', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(reviewData)
-        });
-      }
-
-      if (response.ok) {
-        const reviewResponse = await response.json();
-        console.log('Review salvo:', reviewResponse);
-
-        alert(editingReview ? 'Review atualizado com sucesso!' : 'Review criado com sucesso!');
-
-        // Recarregar reviews do filme
-        loadMovieReviews(imdbId);
-
-        // Fechar modal e resetar form
-        setIsReviewModalOpen(false);
-        setReviewForm({ classificacao: 5, comentario: '' });
-        setEditingReview(null);
-
-      } else {
-        const errorText = await response.text();
-        console.error('Erro ao salvar review:', errorText);
-        alert('Erro ao salvar review. Tente novamente.');
-      }
-    } catch (error) {
-      console.error('Erro ao salvar review:', error);
-      alert('Erro ao salvar review. Verifique sua conexão.');
-    }
-  };
-
-  // Função para deletar review
-  const deleteReview = async (reviewId) => {
-    if (!confirm('Tem certeza que deseja deletar este review?')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`http://localhost:8080/api/reviews/${reviewId}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        alert('Review deletado com sucesso!');
-
-        // Recarregar reviews
-        const movieProps = getMovieProps(selectedMovie);
-        const imdbId = movieProps.imdbId || selectedMovie.imdbID;
-        loadMovieReviews(imdbId);
-
-      } else {
-        const errorText = await response.text();
-        console.error('Erro ao deletar review:', errorText);
-        alert('Erro ao deletar review. Tente novamente.');
-      }
-    } catch (error) {
-      console.error('Erro ao deletar review:', error);
-      alert('Erro ao deletar review. Verifique sua conexão.');
-    }
-  };
-
   // Função para abrir modal de review
   const openReviewModal = (existingReview = null) => {
     if (existingReview) {
@@ -529,7 +738,11 @@ const MovieCatalog = ({ user, onLogout }) => {
           className={`star ${i <= rating ? 'filled' : ''} ${interactive ? 'interactive' : ''}`}
           onClick={interactive && onChange ? () => onChange(i) : undefined}
         >
-          ⭐
+          <Star
+            size={16}
+            color="#4ade80"
+            fill={i <= rating ? "#4ade80" : "none"}
+          />
         </span>
       );
     }
@@ -747,9 +960,15 @@ const MovieCatalog = ({ user, onLogout }) => {
     if (user && user.id) {
       loadPendingRequests();
       loadFriends();
-      loadUserReviews();
+      loadUserReviews(); // Carrega reviews do localStorage
+      loadWishlist(); // Carrega lista de desejos do backend
     }
   }, [user]);
+
+  // Carregar filmes da wishlist quando a lista de IDs muda
+  useEffect(() => {
+    loadWishlistMovies();
+  }, [wishlist]);
 
   // Atualização automática das solicitações
   useEffect(() => {
@@ -772,7 +991,7 @@ const MovieCatalog = ({ user, onLogout }) => {
       const movieProps = getMovieProps(selectedMovie);
       const imdbId = movieProps.imdbId || selectedMovie.imdbID;
       if (imdbId) {
-        loadMovieReviews(imdbId);
+        loadMovieReviews(imdbId); // Carrega reviews do localStorage
       }
     }
   }, [selectedMovie]);
@@ -899,11 +1118,16 @@ const MovieCatalog = ({ user, onLogout }) => {
     }
   };
 
-  // Função para obter avatar baseado no nome do usuário
+  // Função para obter avatar baseado no nome do usuário - ATUALIZADA PARA USAR O NOVO COMPONENTE
   const getUserAvatar = (userName) => {
-    const avatars = ['👤', '👩', '👨', '👩‍💼', '👨‍💻', '👩‍🎨', '👨‍🔬', '👩‍🏫', '👨‍⚕️', '👩‍⚕️'];
-    const index = userName ? userName.length % avatars.length : 0;
-    return avatars[index];
+    return (
+      <UserAvatar
+        userName={userName}
+        size={24}
+        backgroundColor="#4ade80"
+        iconColor="#000000"
+      />
+    );
   };
 
   // Função para verificar se uma solicitação já foi enviada
@@ -930,18 +1154,18 @@ const MovieCatalog = ({ user, onLogout }) => {
   // Função para obter o status do botão de amizade
   const getFriendButtonStatus = (targetUserId) => {
     if (isRequestSent(targetUserId)) {
-      return { text: '✓ Enviado', disabled: true, className: 'sent' };
+      return { text: 'Enviado', disabled: true, className: 'sent', icon: <Check size={16} color="#4ade80" /> };
     }
 
     if (hasPendingRequest(targetUserId)) {
-      return { text: '⏳ Pendente', disabled: true, className: 'pending' };
+      return { text: 'Pendente', disabled: true, className: 'pending', icon: <Clock size={16} color="#4ade80" /> };
     }
 
     if (areFriends(targetUserId)) {
-      return { text: '✓ Amigos', disabled: true, className: 'friends' };
+      return { text: 'Amigos', disabled: true, className: 'friends', icon: <Check size={16} color="#4ade80" /> };
     }
 
-    return { text: '+ Adicionar', disabled: false, className: '' };
+    return { text: 'Adicionar', disabled: false, className: '', icon: <UserPlus size={16} color="#4ade80" /> };
   };
 
   // Função para obter o nome do amigo
@@ -1011,7 +1235,7 @@ const MovieCatalog = ({ user, onLogout }) => {
                   className="friends-search-input"
                 />
                 <div className="friends-search-icon">
-                  {friendSearchLoading ? '⏳' : '🔍'}
+                  {friendSearchLoading ? <Loader size={16} color="#4ade80" /> : <Search size={16} color="#4ade80" />}
                 </div>
               </div>
             </div>
@@ -1032,6 +1256,7 @@ const MovieCatalog = ({ user, onLogout }) => {
                         disabled={buttonStatus.disabled}
                         className={`add-friend-btn ${buttonStatus.className}`}
                       >
+                        {buttonStatus.icon}
                         {buttonStatus.text}
                       </button>
                     </div>
@@ -1069,13 +1294,15 @@ const MovieCatalog = ({ user, onLogout }) => {
                       onClick={() => respondToFriendRequest(request.id, true)}
                       className="accept-btn"
                     >
-                      ✓ Aceitar
+                      <Check size={16} color="#4ade80" />
+                      Aceitar
                     </button>
                     <button
                       onClick={() => respondToFriendRequest(request.id, false)}
                       className="reject-btn"
                     >
-                      ✕ Rejeitar
+                      <X size={16} color="#ef4444" />
+                      Rejeitar
                     </button>
                   </div>
                 </div>
@@ -1106,7 +1333,8 @@ const MovieCatalog = ({ user, onLogout }) => {
                     onClick={() => removeFriend(friendship.id)}
                     className="remove-friend-btn"
                   >
-                    ✕ Remover
+                    <X size={16} color="#ef4444" />
+                    Remover
                   </button>
                 </div>
               ))
@@ -1129,7 +1357,7 @@ const MovieCatalog = ({ user, onLogout }) => {
                 <div key={review.id} className="review-item user-review-item">
                   <div className="review-header">
                     <div className="review-movie-info">
-                      <div className="review-movie-title">Filme: {review.imdbID}</div>
+                      <div className="review-movie-title">{review.movieTitle} ({review.movieYear})</div>
                       <div className="review-rating">
                         {renderStars(review.classificacao)}
                         <span className="rating-text">({review.classificacao}/10)</span>
@@ -1140,13 +1368,15 @@ const MovieCatalog = ({ user, onLogout }) => {
                         onClick={() => openReviewModal(review)}
                         className="edit-review-btn"
                       >
-                        ✏️ Editar
+                        <Edit size={16} color="#4ade80" />
+                        Editar
                       </button>
                       <button
                         onClick={() => deleteReview(review.id)}
                         className="delete-review-btn"
                       >
-                        🗑️ Deletar
+                        <Trash2 size={16} color="#ef4444" />
+                        Deletar
                       </button>
                     </div>
                   </div>
@@ -1183,11 +1413,7 @@ const MovieCatalog = ({ user, onLogout }) => {
                 onClick={toggleFriendsSidebar}
                 title="Menu"
               >
-                <div className="menu-icon">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
+                <Menu size={24} color="#4ade80" />
                 {pendingRequests.length > 0 && (
                   <span className="notification-badge">{pendingRequests.length}</span>
                 )}
@@ -1196,7 +1422,8 @@ const MovieCatalog = ({ user, onLogout }) => {
             </div>
 
             <button onClick={handleBackToCatalog} className="back-btn">
-              ← Voltar ao Catálogo
+              <ArrowLeft size={17} color="#000000" />
+              Voltar ao Catálogo
             </button>
 
             <button onClick={onLogout} className="logout-btn">
@@ -1224,27 +1451,59 @@ const MovieCatalog = ({ user, onLogout }) => {
                 {movieProps.description || 'Descrição não disponível.'}
               </p>
               {selectedMovie.imdbRating && (
-                <p className="movie-rating">⭐ Avaliação IMDb: {selectedMovie.imdbRating}/10</p>
+                <p className="movie-rating">
+                  <Star size={16} color="#4ade80" fill="#4ade80" />
+                  Avaliação IMDb: {selectedMovie.imdbRating}/10
+                </p>
               )}
 
-              {/* Botão para fazer review */}
+              {/* Botões de ação do filme - ADICIONADO BOTÃO ASSISTIR E WISHLIST */}
               <div className="movie-actions">
+                <button
+                  onClick={() => openVideoPlayer(selectedMovie)}
+                  className="watch-btn"
+                >
+                  <Play size={15} color="#000000" />
+                  Assistir Filme
+                </button>
+
                 <button
                   onClick={() => openReviewModal()}
                   className="review-btn"
                 >
-                  ✍️ Fazer Review
+                  <Edit size={16} color="#4ade80" />
+                  Fazer Review
+                </button>
+
+                <button
+                  onClick={() => toggleWishlist(selectedMovie)}
+                  className={`wishlist-btn ${isInWishlist(selectedMovie) ? 'in-wishlist' : ''}`}
+                >
+                  {isInWishlist(selectedMovie) ? (
+                    <>
+                      <Heart size={16} color="#ef4444" fill="#ef4444" />
+                      Na Lista
+                    </>
+                  ) : (
+                    <>
+                      <Heart size={16} color="#4ade80" />
+                      Adicionar à Lista
+                    </>
+                  )}
                 </button>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Seção de Reviews do Filme */}
+        {/* Seção de Reviews do Filme - MODIFICADA PARA MOSTRAR APENAS REVIEWS DO USUÁRIO LOGADO */}
         <section className="movie-reviews-section">
-          <h2>Reviews do Filme</h2>
+          <h2>Meus Reviews deste Filme</h2>
           {reviewsLoading ? (
-            <div className="loading">Carregando reviews...</div>
+            <div className="loading">
+              <Loader size={24} color="#4ade80" />
+              Carregando reviews...
+            </div>
           ) : (
             <div className="reviews-container">
               {movieReviews.length > 0 ? (
@@ -1261,22 +1520,22 @@ const MovieCatalog = ({ user, onLogout }) => {
                           </div>
                         </div>
                       </div>
-                      {review.username === user.username && (
-                        <div className="review-actions">
-                          <button
-                            onClick={() => openReviewModal(review)}
-                            className="edit-review-btn"
-                          >
-                            ✏️ Editar
-                          </button>
-                          <button
-                            onClick={() => deleteReview(review.id)}
-                            className="delete-review-btn"
-                          >
-                            🗑️ Deletar
-                          </button>
-                        </div>
-                      )}
+                      <div className="review-actions">
+                        <button
+                          onClick={() => openReviewModal(review)}
+                          className="edit-review-btn"
+                        >
+                          <Edit size={16} color="#4ade80" />
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => deleteReview(review.id)}
+                          className="delete-review-btn"
+                        >
+                          <Trash2 size={16} color="#ef4444" />
+                          Deletar
+                        </button>
+                      </div>
                     </div>
                     <div className="review-comment">
                       {review.comentario}
@@ -1284,7 +1543,7 @@ const MovieCatalog = ({ user, onLogout }) => {
                   </div>
                 ))
               ) : (
-                <p className="no-reviews">Nenhum review encontrado para este filme.</p>
+                <p className="no-reviews">Você ainda não fez nenhum review para este filme.</p>
               )}
             </div>
           )}
@@ -1294,14 +1553,17 @@ const MovieCatalog = ({ user, onLogout }) => {
         <section className="similar-movies-section">
           <h2>Filmes Similares</h2>
           {loading ? (
-            <div className="loading">Carregando filmes similares...</div>
+            <div className="loading">
+              <Loader size={24} color="#4ade80" />
+              Carregando filmes similares...
+            </div>
           ) : (
             <div className="movies-grid">
               {similarMovies.length > 0 ? (
                 similarMovies.slice(0, 12).map((movie, index) => {
                   const similarMovieProps = getMovieProps(movie);
                   return (
-                    <div key={index} className="movie-card">
+                    <div key={index} className="movie-card" onClick={() => handleMovieClick(movie)}>
                       <div className="movie-poster">
                         <img
                           src={similarMovieProps.poster !== 'N/A' ? similarMovieProps.poster : '/placeholder-poster.jpg'}
@@ -1310,13 +1572,34 @@ const MovieCatalog = ({ user, onLogout }) => {
                             e.target.src = '/placeholder-poster.jpg';
                           }}
                         />
+                        <div className="movie-overlay">
+                          <div className="play-button">
+                            <Play size={32} color="#000000" fill="#000000" />
+                          </div>
+                          <button
+                            className="wishlist-overlay-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleWishlist(movie);
+                            }}
+                          >
+                            {isInWishlist(movie) ? (
+                              <Heart size={20} color="#ef4444" fill="#ef4444" />
+                            ) : (
+                              <Heart size={20} color="#ffffff" />
+                            )}
+                          </button>
+                        </div>
                       </div>
                       <div className="movie-info">
                         <h3 className="movie-title">{similarMovieProps.title}</h3>
                         <div className="movie-details">
                           <span className="movie-year">{similarMovieProps.year}</span>
                           {movie.imdbRating && (
-                            <span className="movie-rating">⭐ {movie.imdbRating}</span>
+                            <span className="movie-rating">
+                              <Star size={14} color="#4ade80" fill="#4ade80" />
+                              {movie.imdbRating}
+                            </span>
                           )}
                         </div>
                       </div>
@@ -1336,7 +1619,9 @@ const MovieCatalog = ({ user, onLogout }) => {
             <div className="review-modal" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>{editingReview ? 'Editar Review' : 'Fazer Review'}</h3>
-                <button onClick={closeReviewModal} className="close-modal-btn">✕</button>
+                <button onClick={closeReviewModal} className="close-modal-btn">
+                  <X size={20} color="#4ade80" />
+                </button>
               </div>
               <div className="modal-content">
                 <div className="movie-info-modal">
@@ -1375,12 +1660,25 @@ const MovieCatalog = ({ user, onLogout }) => {
           </div>
         )}
 
+        {/* VideoPlayer Component */}
+        {isVideoPlayerOpen && currentMovieForPlayer && (
+          <VideoPlayer
+            isOpen={isVideoPlayerOpen}
+            onClose={closeVideoPlayer}
+            movieTitle={getMovieProps(currentMovieForPlayer).title}
+            movieYear={getMovieProps(currentMovieForPlayer).year}
+          />
+        )}
+
         {/* Barra Lateral */}
         <div className={`friends-sidebar ${isFriendsSidebarOpen ? 'open' : ''}`}>
           <div className="friends-sidebar-header">
-            <h3>👥 Menu</h3>
+            <h3>
+              <Users size={20} color="#4ade80" />
+              Menu
+            </h3>
             <button onClick={toggleFriendsSidebar} className="close-sidebar-btn">
-              ✕
+              <X size={20} color="#4ade80" />
             </button>
           </div>
 
@@ -1434,11 +1732,7 @@ const MovieCatalog = ({ user, onLogout }) => {
               onClick={toggleFriendsSidebar}
               title="Menu"
             >
-              <div className="menu-icon">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
+              <Menu size={24} color="#4ade80" />
               {pendingRequests.length > 0 && (
                 <span className="notification-badge">{pendingRequests.length}</span>
               )}
@@ -1457,16 +1751,20 @@ const MovieCatalog = ({ user, onLogout }) => {
               />
               <div className="search-icons">
                 {searchLoading ? (
-                  <div className="search-loading">⏳</div>
+                  <div className="search-loading">
+                    <Loader size={20} color="#4ade80" />
+                  </div>
                 ) : (
                   <>
-                    <button className="search-icon">🔍</button>
+                    <button className="search-icon">
+                      <Search size={20} color="#4ade80" />
+                    </button>
                     {searchTerm && (
                       <button
                         className="clear-search"
                         onClick={handleClearSearch}
                       >
-                        ✕
+                        <X size={20} color="#4ade80" />
                       </button>
                     )}
                   </>
@@ -1488,12 +1786,16 @@ const MovieCatalog = ({ user, onLogout }) => {
             <div className="search-results-header">
               <h2>Resultados da Pesquisa: "{searchTerm}"</h2>
               <button onClick={handleClearSearch} className="back-to-catalog-btn">
-                ← Voltar às Categorias
+                <ArrowLeft size={16} color="#4ade80" />
+                Voltar às Categorias
               </button>
             </div>
 
             {searchLoading ? (
-              <div className="loading">Pesquisando filmes...</div>
+              <div className="loading">
+                <Loader size={24} color="#4ade80" />
+                Pesquisando filmes...
+              </div>
             ) : (
               <div className="movies-grid">
                 {searchResults.length > 0 ? (
@@ -1514,7 +1816,22 @@ const MovieCatalog = ({ user, onLogout }) => {
                             }}
                           />
                           <div className="movie-overlay">
-                            <div className="play-button">▶</div>
+                            <div className="play-button">
+                              <Play size={32} color="#000000" fill="#000000" />
+                            </div>
+                            <button
+                              className="wishlist-overlay-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleWishlist(movie);
+                              }}
+                            >
+                              {isInWishlist(movie) ? (
+                                <Heart size={20} color="#ef4444" fill="#ef4444" />
+                              ) : (
+                                <Heart size={20} color="#ffffff" />
+                              )}
+                            </button>
                           </div>
                         </div>
                         <div className="movie-info">
@@ -1537,64 +1854,169 @@ const MovieCatalog = ({ user, onLogout }) => {
             )}
           </section>
         ) : (
-          movieCategories.map(category => (
-            <section key={category.id} className="category-section">
-              <h2 className="category-title">{category.name}</h2>
+          <>
+            {/* CARROSSEL DA LISTA DE DESEJOS - NOVA SEÇÃO */}
+            {wishlistMovies.length > 0 && (
+              <section className="category-section">
+                <h2 className="category-title">
+                  <Heart size={20} color="#4ade80" fill="#4ade80" style={{ marginRight: '0.5rem' }} />
+                  Minha Lista de Desejos ({wishlistMovies.length})
+                </h2>
 
-              <div className="movies-carousel">
-                <button
-                  className="carousel-arrow left"
-                  onClick={() => scrollCarousel(category.id, 'left')}
-                  disabled={!canScroll(category.id, 'left')}
-                  aria-label="Rolar para a esquerda"
-                >
-                  ‹
-                </button>
+                <div className="movies-carousel">
+                  <button
+                    className="carousel-arrow left"
+                    onClick={() => scrollCarousel('wishlist', 'left')}
+                    disabled={!canScroll('wishlist', 'left')}
+                    aria-label="Rolar para a esquerda"
+                  >
+                    <ChevronLeft size={24} color="#4ade80" />
+                  </button>
 
-                <div
-                  className="movies-row"
-                  ref={el => carouselRefs.current[category.id] = el}
-                >
-                  {category.movies.map(movie => (
-                    <div
-                      key={movie.id}
-                      className="movie-card carousel-card"
-                      onClick={() => handleMovieClick(movie)}
-                    >
-                      <div className="movie-poster">
-                        <img src={movie.poster} alt={movie.title} />
-                        <div className="movie-overlay">
-                          <div className="play-button">▶</div>
+                  <div
+                    className="movies-row"
+                    ref={el => carouselRefs.current['wishlist'] = el}
+                  >
+                    {wishlistMovies.map((movie, index) => {
+                      const movieProps = getMovieProps(movie);
+                      return (
+                        <div
+                          key={movieProps.imdbId || index}
+                          className="movie-card carousel-card"
+                          onClick={() => handleMovieClick(movie)}
+                        >
+                          <div className="movie-poster">
+                            <img
+                              src={movieProps.poster !== 'N/A' ? movieProps.poster : '/placeholder-poster.jpg'}
+                              alt={movieProps.title}
+                              onError={(e) => {
+                                e.target.src = '/placeholder-poster.jpg';
+                              }}
+                            />
+                            <div className="movie-overlay">
+                              <div className="play-button">
+                                <Play size={32} color="#000000" fill="#000000" />
+                              </div>
+                              <button
+                                className="wishlist-overlay-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeFromWishlist(movie);
+                                }}
+                              >
+                                <Heart size={20} color="#ef4444" fill="#ef4444" />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="movie-info">
+                            <h3 className="movie-title">{movieProps.title}</h3>
+                            <span className="movie-year">{movieProps.year}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    className="carousel-arrow right"
+                    onClick={() => scrollCarousel('wishlist', 'right')}
+                    disabled={!canScroll('wishlist', 'right')}
+                    aria-label="Rolar para a direita"
+                  >
+                    <ChevronRight size={24} color="#4ade80" />
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {/* CATEGORIAS ORIGINAIS */}
+            {movieCategories.map(category => (
+              <section key={category.id} className="category-section">
+                <h2 className="category-title">{category.name}</h2>
+
+                <div className="movies-carousel">
+                  <button
+                    className="carousel-arrow left"
+                    onClick={() => scrollCarousel(category.id, 'left')}
+                    disabled={!canScroll(category.id, 'left')}
+                    aria-label="Rolar para a esquerda"
+                  >
+                    <ChevronLeft size={24} color="#4ade80" />
+                  </button>
+
+                  <div
+                    className="movies-row"
+                    ref={el => carouselRefs.current[category.id] = el}
+                  >
+                    {category.movies.map(movie => (
+                      <div
+                        key={movie.id}
+                        className="movie-card carousel-card"
+                        onClick={() => handleMovieClick(movie)}
+                      >
+                        <div className="movie-poster">
+                          <img src={movie.poster} alt={movie.title} />
+                          <div className="movie-overlay">
+                            <div className="play-button">
+                              <Play size={32} color="#000000" fill="#000000" />
+                            </div>
+                            <button
+                              className="wishlist-overlay-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleWishlist(movie);
+                              }}
+                            >
+                              {isInWishlist(movie) ? (
+                                <Heart size={20} color="#ef4444" fill="#ef4444" />
+                              ) : (
+                                <Heart size={20} color="#ffffff" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="movie-info">
+                          <h3 className="movie-title">{movie.title}</h3>
+                          <span className="movie-year">{movie.year}</span>
                         </div>
                       </div>
-                      <div className="movie-info">
-                        <h3 className="movie-title">{movie.title}</h3>
-                        <span className="movie-year">{movie.year}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
 
-                <button
-                  className="carousel-arrow right"
-                  onClick={() => scrollCarousel(category.id, 'right')}
-                  disabled={!canScroll(category.id, 'right')}
-                  aria-label="Rolar para a direita"
-                >
-                  ›
-                </button>
-              </div>
-            </section>
-          ))
+                  <button
+                    className="carousel-arrow right"
+                    onClick={() => scrollCarousel(category.id, 'right')}
+                    disabled={!canScroll(category.id, 'right')}
+                    aria-label="Rolar para a direita"
+                  >
+                    <ChevronRight size={24} color="#4ade80" />
+                  </button>
+                </div>
+              </section>
+            ))}
+          </>
         )}
       </main>
 
-      {/* Barra Lateral */}
+      {/* VideoPlayer Component - TAMBÉM DISPONÍVEL NA PÁGINA PRINCIPAL */}
+      {isVideoPlayerOpen && currentMovieForPlayer && (
+        <VideoPlayer
+          isOpen={isVideoPlayerOpen}
+          onClose={closeVideoPlayer}
+          movieTitle={getMovieProps(currentMovieForPlayer).title}
+          movieYear={getMovieProps(currentMovieForPlayer).year}
+        />
+      )}
+
+      {/* Barra Lateral - REMOVIDA A ABA WISHLIST */}
       <div className={`friends-sidebar ${isFriendsSidebarOpen ? 'open' : ''}`}>
         <div className="friends-sidebar-header">
-          <h3>👥 Menu</h3>
+          <h3>
+            <Users size={20} color="#4ade80" />
+            Menu
+          </h3>
           <button onClick={toggleFriendsSidebar} className="close-sidebar-btn">
-            ✕
+            <X size={20} color="#4ade80" />
           </button>
         </div>
 
@@ -1637,3 +2059,4 @@ const MovieCatalog = ({ user, onLogout }) => {
 };
 
 export default MovieCatalog;
+
